@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct DialogStatusView :View{
+public struct DialogStatusView :View{
     @State private var timer: Timer?
 
     @Binding private var isPresented: Bool
@@ -18,13 +18,13 @@ struct DialogStatusView :View{
     @Environment(\.colorScheme) var colorScheme
 
 
-    init(isPresented: Binding<Bool>, isSuccess: Binding<Bool>, message: Binding<String>) {
+    public init(isPresented: Binding<Bool>, isSuccess: Binding<Bool>, message: Binding<String>) {
         self._isPresented = isPresented
         self._isSuccess = isSuccess
         self._message = message
     }
 
-    var body: some View {
+    public var body: some View {
         ZStack {
             Color.black.opacity(0.6)
                     .edgesIgnoringSafeArea(.all)

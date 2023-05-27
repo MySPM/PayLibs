@@ -7,17 +7,17 @@ import Foundation
 import SwiftUI
 
 
-struct LoadingDialogView :View{
+public struct LoadingDialogView :View{
     @Binding private var isPresented: Bool
     
     @Environment(\.colorScheme) var colorScheme
 
 
-    init(isPresented: Binding<Bool>) {
+    public init(isPresented: Binding<Bool>) {
         self._isPresented = isPresented
     }
 
-    var body: some View {
+    public var body: some View {
         ZStack {
             Color.black.opacity(0.6)
                     .edgesIgnoringSafeArea(.all)
