@@ -22,7 +22,7 @@ import StoreKit
     }
     
     public func expireDateString(_ productId: String) -> String{
-        return _payStore.expireDateString(productId)
+        return "订阅至" + _payStore.expireDateString(productId)
     }
     
     public func pay(_ productId: String, password: String?, with handler: @escaping (PayInfo) -> Void) {
@@ -64,7 +64,7 @@ import StoreKit
     }
 
 
-    public func verify(_ productId: String, password: String, with handler: @escaping (PayInfo) -> Void) {
+    public func verifyLocal(_ productId: String, password: String, with handler: @escaping (PayInfo) -> Void) {
         _productID = productId
         _password = password
 

@@ -24,9 +24,6 @@ class PayStore: NSObject {
 
     public func payInfo(_ productId: String) -> PayInfo? {
 
-//        guard let data = UserDefaults.standard.data(forKey: productId) else {
-//            return nil
-//        }
         
         do {
             // 检索 PayInfo 对象
@@ -36,8 +33,6 @@ class PayStore: NSObject {
                     return payInfo
                 }
             }
-//            let payInfo = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? PayInfo
-//            return payInfo
         } catch {
             print("get PayInfo failed: \(error)")
         }
