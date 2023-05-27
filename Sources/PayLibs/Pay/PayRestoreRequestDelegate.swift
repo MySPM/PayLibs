@@ -10,12 +10,14 @@ class RestoreRequestDelegate {
 
     private var _paymentHandler: (PayInfo) -> Void = {_ in}
     private var _productId: String
+    private var _password: String?
     private var _isRestore: Bool
     
     private let _payStore = PayStore.shared
 
-    init(_ productId: String, _ isRestore: Bool, _ handler: @escaping (PayInfo) -> Void) {
+    init(_ productId: String, _ password: String?, _ isRestore: Bool, _ handler: @escaping (PayInfo) -> Void) {
         _productId = productId
+        _password = password
         _isRestore = isRestore
         _paymentHandler = handler
     }
@@ -66,7 +68,20 @@ class RestoreRequestDelegate {
             let receiptData = try? Data(contentsOf: receiptUrl!)
             let receiptBase64Str = receiptData?.base64EncodedString(options: [])
 
-            let receiptDataStr = "{\"receipt-data\" : \"\(receiptBase64Str!)\"}"
+            var receiptDataStr = """
+                                    {
+                                        "receipt-data" : "\(receiptBase64Str!)"
+                                    }
+                                    """
+            if _password != nil && !_password!.isEmpty {
+                receiptDataStr = """
+                                    {
+                                        "receipt-data" : "\(receiptBase64Str!)",
+                                        "password":"\(_password!)"
+                                    }
+                                    """
+            }
+
             let data = receiptDataStr.data(using: .utf8)
 
             guard let data else {

@@ -22,9 +22,11 @@ public struct PayUI : View {
     @Environment(\.presentationMode) private var presentationMode
     
     var productId: String = ""
+    var password: String? = nil
     
-    public init(productId: String) {
+    public init(productId: String, password: String?) {
         self.productId = productId
+        self.password = password
     }
         
     public var body : some View {
@@ -38,14 +40,14 @@ public struct PayUI : View {
                     PayRestoreBtnView {
                         isProgressShowing = true
                         
-                        payManager.pay(productId) { info in
+                        payManager.pay(productId, password: password) { info in
                             self.handleResult(isRestore: false, info: info)
                         }
                         
                     } restoreAction: {
                         isProgressShowing = true
                         
-                        payManager.restore(productId) { info in
+                        payManager.restore(productId, password: password) { info in
                             self.handleResult(isRestore: true, info: info)
                         }
                     }
@@ -220,6 +222,6 @@ public struct PayUI : View {
 
 struct PayUI_Previews: PreviewProvider {
     static var previews: some View {
-        PayUI(productId: "com.andforce.fourms.001")
+        PayUI(productId: "com.andforce.fourms.001", password: "")
     }
 }

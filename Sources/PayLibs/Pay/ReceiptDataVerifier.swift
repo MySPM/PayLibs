@@ -16,6 +16,38 @@ import Foundation
     private let SANDBOX = "https://sandbox.itunes.apple.com/verifyReceipt"
     private let AppStore = "https://buy.itunes.apple.com/verifyReceipt"
 
+    func verify(receipt: Data, handler: @escaping (Date, Dictionary<String, Any>) -> Void) {
+        // 先检查网络时间
+        InternetTimeFetcher.shared.getInternetDate(success: { [self] date in
+            // 向苹果服务器验证凭证
+            post(url: AppStore, receiptData: receipt) { [self] dictionary in
+                if dictionary.isEmpty {
+                    handler(date, dictionary)
+                } else {
+                    // 21007 说明是 Sandbox 下的收据却拿到正式环境进行了验证，因此需要重新在 Sandbox 下进行验证
+                    if let status = dictionary["status"] as? Int, status == 21007 {
+                        post(url: SANDBOX, receiptData: receipt) { sandboxDictionary in
+                            handler(date, sandboxDictionary)
+                        }
+                    } else {
+                        handler(date, dictionary)
+                    }
+                }
+            }
+        }, failure: { error in
+            // 时间检查失败就返回空
+            handler(Date(), Dictionary())
+        })
+    }
+
+    func verifyLocal(password: String?, handler: @escaping (Date, Dictionary<String, Any>) -> Void) {
+        guard let data = appStoreReceiptData(password: password) else {
+            handler(Date(), Dictionary())
+            return
+        }
+        verify(receipt: data, handler: handler)
+    }
+    
     private func post(url: String, receiptData: Data, handler: @escaping (Dictionary<String, Any>) -> Void) {
         guard let URL = URL(string: url) else {
             handler(Dictionary())
@@ -51,7 +83,7 @@ import Foundation
         dataTask.resume()
     }
 
-    private func appStoreReceiptData() -> Data? {
+    private func appStoreReceiptData(password: String?) -> Data? {
         //从沙盒中获取交易凭证并且拼接成请求体数据
         let receiptUrl = Bundle.main.appStoreReceiptURL
         guard let receiptData = try? Data(contentsOf: receiptUrl!) else {
@@ -60,47 +92,28 @@ import Foundation
         }
 
         //转化为base64字符串
-        let receiptString = receiptData.base64EncodedString(options: .endLineWithLineFeed)
+        let receiptBase64Str = receiptData.base64EncodedString(options: .endLineWithLineFeed)
 
         //http://cwqqq.com/2017/12/05/ios_in-app_pay_server_side_code
         //let bodyString = "{\"receipt-data\" : \"\(receiptString)\", \"password\":\"b3189c215c0b423d985bc8d2548bb91a\"}"
-        let bodyString = "{\"receipt-data\" : \"\(receiptString)\"}"
-        guard let bodyData = bodyString.data(using: .utf8) else {
+        
+        var receiptDataStr = """
+                                {
+                                    "receipt-data" : "\(receiptBase64Str)"
+                                }
+                                """
+        if password != nil && !password!.isEmpty {
+            receiptDataStr = """
+                                {
+                                    "receipt-data" : "\(receiptBase64Str)",
+                                    "password":"\(password!)"
+                                }
+                                """
+        }
+        
+        guard let bodyData = receiptDataStr.data(using: .utf8) else {
             return nil
         }
         return bodyData
     }
-
-    func verify(receipt: Data, handler: @escaping (Date, Dictionary<String, Any>) -> Void) {
-        // 先检查网络时间
-        InternetTimeFetcher.shared.getInternetDate(success: { [self] date in
-            // 向苹果服务器验证凭证
-            post(url: AppStore, receiptData: receipt) { [self] dictionary in
-                if dictionary.isEmpty {
-                    handler(date, dictionary)
-                } else {
-                    // 21007 说明是 Sandbox 下的收据却拿到正式环境进行了验证，因此需要重新在 Sandbox 下进行验证
-                    if let status = dictionary["status"] as? Int, status == 21007 {
-                        post(url: SANDBOX, receiptData: receipt) { sandboxDictionary in
-                            handler(date, sandboxDictionary)
-                        }
-                    } else {
-                        handler(date, dictionary)
-                    }
-                }
-            }
-        }, failure: { error in
-            // 时间检查失败就返回空
-            handler(Date(), Dictionary())
-        })
-    }
-
-    func verifyLocal(handler: @escaping (Date, Dictionary<String, Any>) -> Void) {
-        guard let data = appStoreReceiptData() else {
-            handler(Date(), Dictionary())
-            return
-        }
-        verify(receipt: data, handler: handler)
-    }
-
 }

@@ -10,11 +10,13 @@ import StoreKit
 
     private var _paymentHandler: (PayInfo) -> Void = {_ in}
     private var _productId: String? = nil
+    private var _password: String? = nil
 
-    init(_ productId: String, _ handler: @escaping (PayInfo) -> Void) {
+    init(_ productId: String, _ password: String?, _ handler: @escaping (PayInfo) -> Void) {
         super.init()
         _productId = productId
         _paymentHandler = handler
+        _password = password
     }
 
     func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
@@ -45,7 +47,7 @@ import StoreKit
     }
 
     private func verify() {
-        ReceiptDataVerifier.shared.verifyLocal { [self] (date, response) in
+        ReceiptDataVerifier.shared.verifyLocal(password: _password) { [self] (date, response) in
             if let responseChecked = response as? [String:Any],
                responseChecked.count > 0,
                let code = responseChecked["status"] as? Int {

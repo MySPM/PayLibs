@@ -7,6 +7,8 @@ import StoreKit
     public static let shared = BBSPayManager()
     
     private var _productID: String?
+    private var _password: String?
+    
     private var _handler: (PayInfo) -> Void = {_ in }
     private var _isRestore = false
     private var _transactionObserver: PaymentTransactionObserver?
@@ -23,12 +25,13 @@ import StoreKit
         return _payStore.expireDateString(productId)
     }
     
-    public func pay(_ productId: String, with handler: @escaping (PayInfo) -> Void) {
-        _transactionObserver = PaymentTransactionObserver(productId, handler)
+    public func pay(_ productId: String, password: String?, with handler: @escaping (PayInfo) -> Void) {
+        _transactionObserver = PaymentTransactionObserver(productId, password, handler)
         SKPaymentQueue.default().add(_transactionObserver!)
 
         _handler = handler
         _productID = productId
+        _password = password
         _isRestore = false
 
         if SKPaymentQueue.canMakePayments() {
@@ -36,7 +39,7 @@ import StoreKit
             let products = NSSet(array: product)
             let request = SKProductsRequest(productIdentifiers: products as! Set<String>)
 
-            _delegateProxy = RestoreRequestDelegate(productId, false, _handler)
+            _delegateProxy = RestoreRequestDelegate(productId, _password, false, _handler)
             request.delegate = self
             request.start()
         } else {
@@ -47,25 +50,27 @@ import StoreKit
         }
     }
 
-    public func restore(_ productId: String, with handler: @escaping (PayInfo) -> Void) {
+    public func restore(_ productId: String, password: String?, with handler: @escaping (PayInfo) -> Void) {
         _handler = handler
         _productID = productId
+        _password = password
         _isRestore = true
 
         let request = SKReceiptRefreshRequest()
-        _delegateProxy = RestoreRequestDelegate(productId, true, _handler)
+        _delegateProxy = RestoreRequestDelegate(_productID!, _password, true, _handler)
         request.delegate = self
         request.start()
         print("PayManager --> On refresh receipt started")
     }
 
 
-    public func verify(_ productId: String, with handler: @escaping (PayInfo) -> Void) {
+    public func verify(_ productId: String, password: String, with handler: @escaping (PayInfo) -> Void) {
         _productID = productId
+        _password = password
 
-        print("PayManager --> verifyPay:\tproductId:\(_productID!)")
+        print("PayManager --> verifyPay:\tproductId:\(_productID)")
 
-        ReceiptDataVerifier.shared.verifyLocal { (date, dictionary) in
+        ReceiptDataVerifier.shared.verifyLocal(password: password) { (date, dictionary) in
             if let dictionary = dictionary as? [String: Any], dictionary.count > 0 {
                 let info = PayInfo.create(self._productID!, status: 0, netDateMs: Int64(date.timeIntervalSince1970), response: dictionary)
                 DispatchQueue.main.async {
