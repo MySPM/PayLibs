@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import CommonLibs
 
 @objcMembers public class PayStore: NSObject {
     public static let shared = PayStore()

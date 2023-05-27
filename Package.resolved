@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "commonlibs",
+      "kind" : "remoteSourceControl",
+      "location" : "git@github.com:andforce/CommonLibs.git",
+      "state" : {
+        "revision" : "736eccc58c52a2b30a3488a9c8d508b98e05650b",
+        "version" : "0.0.3"
+      }
+    }
+  ],
+  "version" : 2
+}
