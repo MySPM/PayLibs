@@ -24,13 +24,20 @@ class PayStore: NSObject {
 
     public func payInfo(_ productId: String) -> PayInfo? {
 
-        guard let data = UserDefaults.standard.data(forKey: productId) else {
-            return nil
-        }
+//        guard let data = UserDefaults.standard.data(forKey: productId) else {
+//            return nil
+//        }
         
         do {
-            let payInfo = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? PayInfo
-            return payInfo
+            // 检索 PayInfo 对象
+            if let data = UserDefaults.standard.object(forKey: productId) as? Data {
+                if let payInfo = try NSKeyedUnarchiver.unarchivedObject(ofClass: PayInfo.self, from: data) {
+                    // 使用 payInfo 对象
+                    return payInfo
+                }
+            }
+//            let payInfo = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? PayInfo
+//            return payInfo
         } catch {
             print("get PayInfo failed: \(error)")
         }
@@ -41,49 +48,17 @@ class PayStore: NSObject {
         guard let payInfo = payInfo(productId) else {
             return false
         }
-        return Bundle.main.isDebug() || isPayInfoValid(payInfo)
+        return Bundle.main.isDebug() || isPayInfoValid(payInfo, productId: productId)
     }
 
-    private func isPayInfoValid(_ payInfo: PayInfo?) -> Bool {
+    private func isPayInfoValid(_ payInfo: PayInfo?, productId: String) -> Bool {
 
         // 网络时间，不能区本地时间，否则用户可以修改本地时间，从而绕过支付
         guard let netDataMs = payInfo?.netDataMs else {
             return false
         }
 
-        return expireDateMs(payInfo: payInfo) >= netDataMs
-    }
-
-    public func expireDateMs(productId: String) -> Int64{
-        let payInfo = payInfo(productId)
-        return expireDateMs(payInfo:payInfo)
-    }
-
-    public func expireDateMs(payInfo: PayInfo?) -> Int64{
-        guard let payInfo = payInfo else {
-            return 0
-        }
-
-        guard let inapps = payInfo.inApps else {
-            return 0
-        }
-
-        // 网络时间，不能区本地时间，否则用户可以修改本地时间，从而绕过支付
-        guard payInfo.netDataMs != nil else {
-            return 0
-        }
-
-        let swiftArray = inapps.map { $0 as! InAppBean }
-
-        let sortInApps = swiftArray.sorted { (a, b) -> Bool in
-            a.purchaseDateMs > b.purchaseDateMs
-        }
-
-        let firstPurchaseDataMs: Int64 = sortInApps.last?.purchaseDateMs ?? 0
-        // 有效期是一年, 买了几个就延长几年, 毫秒
-        let duration: Int64 = Int64(365 * 24 * 60 * 60 * 1000 * sortInApps.count)
-        let expireDateMS: Int64 = firstPurchaseDataMs + duration
-        return expireDateMS
+        return expireDateMs(productId: productId, payInfo: payInfo) >= netDataMs
     }
 
     private func getLocalDateFormatAnyDate(_ anyDate: Date) -> Date {
@@ -119,5 +94,54 @@ class PayStore: NSObject {
 //            restoreLabel.text = "恢复之前购买"
             return ""
         }
+    }
+
+    private func expireDateMs(productId: String) -> Int64{
+        let payInfo = payInfo(productId)
+        return expireDateMs(productId: productId, payInfo:payInfo)
+    }
+
+    public func expireDateMs(productId: String, payInfo: PayInfo?) -> Int64{
+        guard let payInfo = payInfo else {
+            return 0
+        }
+
+        guard let inApps = payInfo.inApps else {
+            return 0
+        }
+
+        // 网络时间，不能区本地时间，否则用户可以修改本地时间，从而绕过支付
+        guard payInfo.netDataMs != nil else {
+            return 0
+        }
+
+        let inAppBeans:[InAppBean] = inApps.filter { bean in
+            bean.productId == productId
+        }
+        //.filter { (bean: InAppBean) -> Swift.Bool in bean.productId == productId }
+
+        
+        let sortInApps = inAppBeans.sorted { (a, b) -> Bool in
+            a.purchaseDateMs > b.purchaseDateMs
+        }
+        
+        let redueceInApps:[InAppBean] = sortInApps
+
+        
+        if redueceInApps.isEmpty {
+            return 0
+        }
+
+        let bean = redueceInApps.first!
+        if bean.isAutoSubscription() {
+            return bean.expiresDateMs
+        } else {
+            let firstPurchaseDataMs: Int64 = redueceInApps.last?.purchaseDateMs ?? 0
+            // 有效期是一年, 买了几个就延长几年, 毫秒
+            let duration: Int64 = Int64(365 * 24 * 60 * 60 * 1000 * redueceInApps.count)
+            let expireDateMS: Int64 = firstPurchaseDataMs + duration
+            return expireDateMS
+        }
+
     }
 }

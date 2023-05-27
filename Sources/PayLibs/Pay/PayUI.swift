@@ -17,6 +17,8 @@ public struct PayUI : View {
     @State private var isPaySuccess: Bool = false
     @State private var statusMessage: String = ""
     
+    @State private var buttonText : String = "点击解锁"
+    
     private let payManager = PayManager.shared
     
     @Environment(\.presentationMode) private var presentationMode
@@ -37,7 +39,7 @@ public struct PayUI : View {
                 VStack {
                     itemsView
                     
-                    PayRestoreBtnView {
+                    PayRestoreBtnView(buttonText: $buttonText) {
                         isProgressShowing = true
                         
                         payManager.pay(productId, password: password) { info in
@@ -65,6 +67,8 @@ public struct PayUI : View {
             
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(trailing: introButton)
+        }.onAppear {
+            buttonText = payManager.expireDateString(productId)
         }
         
     }
@@ -178,10 +182,12 @@ public struct PayUI : View {
     private struct PayRestoreBtnView : View {
         private var payAction: () -> Void
         private var restoreAction: () -> Void
+        @Binding var buttonText: String
         
-        init(payAction: @escaping () -> Void, restoreAction: @escaping () -> Void) {
+        init(buttonText: Binding<String>, payAction: @escaping () -> Void, restoreAction: @escaping () -> Void) {
             self.payAction = payAction
             self.restoreAction = restoreAction
+            self._buttonText = buttonText
         }
         
         var body: some View {
@@ -193,7 +199,7 @@ public struct PayUI : View {
                     Button {
                         payAction()
                     } label: {
-                        Text("点解解锁").bold().foregroundColor(Color(UIColor.white))
+                        Text("\(buttonText)").bold().foregroundColor(Color(UIColor.white))
                             .frame(maxWidth: .infinity) // 将Text的宽度设置为Button的最大宽度
                             .frame(height: 50)
                         

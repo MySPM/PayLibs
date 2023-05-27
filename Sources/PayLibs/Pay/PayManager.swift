@@ -77,6 +77,7 @@ import StoreKit
                     handler(PayInfo.createError(self._productID!, status: -1))
                 } else {
                     let info = PayInfo.create(self._productID!, status: 0, netDateMs: Int64(date.timeIntervalSince1970), response: dictionary)
+                    self._payStore.savePayInfo(info)
                     handler(info)
                 }
             }
