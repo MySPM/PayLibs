@@ -15,7 +15,7 @@ import StoreKit
     
     private let _payStore = PayStore.shared
 
-    private var _delegateProxy: RestoreRequestDelegate? = nil
+    private var _delegateProxy: AppStoreRequestDelegate? = nil
 
     public func hasPayed(_ productId: String) -> Bool {
         return _payStore.hasPayed(productId)
@@ -39,7 +39,7 @@ import StoreKit
             let products = NSSet(array: product)
             let request = SKProductsRequest(productIdentifiers: products as! Set<String>)
 
-            _delegateProxy = RestoreRequestDelegate(productId, _password, false, _handler)
+            _delegateProxy = AppStoreRequestDelegate(productId, _password, false, _handler)
             request.delegate = self
             request.start()
         } else {
@@ -57,7 +57,7 @@ import StoreKit
         _isRestore = true
 
         let request = SKReceiptRefreshRequest()
-        _delegateProxy = RestoreRequestDelegate(_productID!, _password, true, _handler)
+        _delegateProxy = AppStoreRequestDelegate(_productID!, _password, true, _handler)
         request.delegate = self
         request.start()
         print("PayManager --> On refresh receipt started")
@@ -68,18 +68,16 @@ import StoreKit
         _productID = productId
         _password = password
 
-        print("PayManager --> verifyPay:\tproductId:\(_productID)")
+        print("PayManager --> verifyPay:\tproductId:\(String(describing: _productID))")
 
         ReceiptDataVerifier.shared.verifyLocal(password: password) { (date, dictionary) in
-            if let dictionary = dictionary as? [String: Any], dictionary.count > 0 {
-                let info = PayInfo.create(self._productID!, status: 0, netDateMs: Int64(date.timeIntervalSince1970), response: dictionary)
-                DispatchQueue.main.async {
-                    handler(info)
-                }
-            } else {
-                print("PayManager --> verifyPay: 获取网络时间失败，没法验证是否购买了")
-                DispatchQueue.main.async {
+            DispatchQueue.main.async {
+                if dictionary.isEmpty {
+                    print("PayManager --> verifyPay: 获取网络时间失败，没法验证是否购买了")
                     handler(PayInfo.createError(self._productID!, status: -1))
+                } else {
+                    let info = PayInfo.create(self._productID!, status: 0, netDateMs: Int64(date.timeIntervalSince1970), response: dictionary)
+                    handler(info)
                 }
             }
         }
@@ -102,7 +100,7 @@ import StoreKit
     }
 
     public func request(_ request: SKRequest, didFailWithError error: Error) {
-        _delegateProxy?.request(request, didFailWithError: error)
+        _delegateProxy?.requestDidFail(request, didFailWithError: error)
     }
 
     public func requestDidFinish(_ request: SKRequest) {

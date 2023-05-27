@@ -6,7 +6,7 @@
 import Foundation
 import StoreKit
 
-class RestoreRequestDelegate {
+class AppStoreRequestDelegate {
 
     private var _paymentHandler: (PayInfo) -> Void = {_ in}
     private var _productId: String
@@ -22,7 +22,7 @@ class RestoreRequestDelegate {
         _paymentHandler = handler
     }
 
-    func request(_ request: SKRequest, didFailWithError error: Error) {
+    func requestDidFail(_ request: SKRequest, didFailWithError error: Error) {
         print("--->> Pay: error: \(error)")
         DispatchQueue.main.async {
             self._paymentHandler(PayInfo.createError(self._productId, status: -1))
@@ -35,7 +35,7 @@ class RestoreRequestDelegate {
             return
         }
 
-        print("PayManager --> productID:\(response.invalidProductIdentifiers)")
+        print("PayManager --> invalidProductIdentifiers:\(response.invalidProductIdentifiers)")
         print("PayManager --> 产品付费数量:\(products.count)")
 
         var p: SKProduct?
