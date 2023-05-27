@@ -21,8 +21,8 @@ import StoreKit
         return _payStore.hasPayed(productId)
     }
     
-    public func expireDateString(_ productId: String) -> String{
-        return "订阅至" + _payStore.expireDateString(productId)
+    public func expireDateMs(_ productId: String) -> Int64 {
+        return _payStore.expireDateMs(productId: productId)
     }
     
     public func pay(_ productId: String, password: String?, with handler: @escaping (PayInfo) -> Void) {

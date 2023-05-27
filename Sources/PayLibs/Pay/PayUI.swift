@@ -68,7 +68,8 @@ public struct PayUI : View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(trailing: introButton)
         }.onAppear {
-            buttonText = payManager.expireDateString(productId)
+            let date = payManager.expireDateMs(productId).dateString()
+            buttonText = date == "" ? "点击解锁" : "订阅至" + date
         }
         
     }

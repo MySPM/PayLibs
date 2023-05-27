@@ -56,47 +56,13 @@ class PayStore: NSObject {
         return expireDateMs(productId: productId, payInfo: payInfo) >= netDataMs
     }
 
-    private func getLocalDateFormatAnyDate(_ anyDate: Date) -> Date {
-        let sourceTimeZone = TimeZone(abbreviation: "UTC") //或GMT
-        let desTimeZone = TimeZone.current
-        //得到源日期与世界标准时间的偏移量
-        let sourceGMTOffset = sourceTimeZone?.secondsFromGMT(for: anyDate) ?? 0
-        //目标日期与本地时区的偏移量
-        let destinationGMTOffset = desTimeZone.secondsFromGMT(for: anyDate)
-        //得到时间偏移量的差值
-        let interval = TimeInterval(destinationGMTOffset - sourceGMTOffset)
-        //转为现在时间
-        let destinationDateNow = Date(timeInterval: interval, since: anyDate)
-        return destinationDateNow
-    }
-    
-    public func expireDateString(_ productId: String) -> String{
-        // 毫秒转成秒
-        let expireTime = expireDateMs(productId: productId) / 1000
-        if expireTime != 0 {
-            let date = Date(timeIntervalSince1970: TimeInterval(expireTime))
-            let localDate = getLocalDateFormatAnyDate(date)
-            let dateFormatter = DateFormatter()
 
-            //设置格式：zzz表示时区
-            dateFormatter.dateFormat = "yyyy/MM/dd"
-
-            //NSDate转NSString
-            let currentDateString = dateFormatter.string(from: localDate)
-//            restoreLabel.text = "高级功能到期:\(currentDateString)"
-            return currentDateString
-        } else {
-//            restoreLabel.text = "恢复之前购买"
-            return ""
-        }
-    }
-
-    private func expireDateMs(productId: String) -> Int64{
+    public func expireDateMs(productId: String) -> Int64{
         let payInfo = payInfo(productId)
         return expireDateMs(productId: productId, payInfo:payInfo)
     }
 
-    public func expireDateMs(productId: String, payInfo: PayInfo?) -> Int64{
+    private func expireDateMs(productId: String, payInfo: PayInfo?) -> Int64{
         guard let payInfo = payInfo else {
             return 0
         }
