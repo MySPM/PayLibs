@@ -11,41 +11,85 @@ import SwiftUI
 public struct PayUI : View {
     
     @State private var isProgressShowing: Bool = false
+
+    
+    @State private var isStatueViewShowing: Bool = false
+    @State private var isPaySuccess: Bool = false
+    @State private var statusMessage: String = ""
+    
     private let payManager = BBSPayManager.shared
+    
+    @Environment(\.presentationMode) private var presentationMode
     
     var productId: String = ""
     
     public init(productId: String) {
         self.productId = productId
     }
-    
+        
     public var body : some View {
-        ZStack {
-            Color(.systemGray6).ignoresSafeArea()
-            
-            VStack {
-                itemsView
+        NavigationView {
+            ZStack {
+                Color(.systemGray6).ignoresSafeArea()
                 
-                PayRestoreBtnView {
-                    isProgressShowing = true
+                VStack {
+                    itemsView
                     
-                    payManager.pay(productId) { info in
-                        isProgressShowing = false
-                    }
-                    
-                } restoreAction: {
-                    isProgressShowing = true
-                    payManager.restore(productId) { info in
-                        isProgressShowing = false
+                    PayRestoreBtnView {
+                        isProgressShowing = true
+                        
+                        payManager.pay(productId) { info in
+                            self.handleResult(isRestore: false, info: info)
+                        }
+                        
+                    } restoreAction: {
+                        isProgressShowing = true
+                        
+                        payManager.restore(productId) { info in
+                            self.handleResult(isRestore: true, info: info)
+                        }
                     }
                 }
+                
+                // Loading
+                if isProgressShowing {
+                    LoadingDialogView(isPresented: $isProgressShowing).animation(.easeInOut)
+                }
+                
+                if isStatueViewShowing {
+                    DialogStatusView(isPresented: $isStatueViewShowing, isSuccess: $isPaySuccess, message: $statusMessage).animation(.easeInOut)
+                }
             }
-
             
-            // Loading
-            if isProgressShowing {
-                LoadingDialogView(isPresented: $isProgressShowing).animation(.easeInOut)
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarItems(trailing: introButton)
+        }
+        
+    }
+    
+    func handleResult(isRestore: Bool, info: PayInfo) {
+        isProgressShowing = false
+        
+        isStatueViewShowing = true
+        isPaySuccess = info.status == 0
+        
+        if info.status == 0 {
+            statusMessage = isRestore ? "恢复成功":"解锁成功"
+        } else {
+            statusMessage = isRestore ? "恢复失败":"解锁失败"
+        }
+    }
+    
+    var introButton : some View {
+        Button(action: {
+            if isStatueViewShowing || isProgressShowing{
+                return
             }
+            self.presentationMode.wrappedValue.dismiss()
+        }) {
+            HStack {
+                Image(systemName: "xmark").imageScale(.medium)
+            }.frame(height: 40)
         }
     }
     
@@ -103,12 +147,9 @@ public struct PayUI : View {
                     
                 }
                 .background(Color(UIColor.tertiarySystemFill))
-                .cornerRadius(18)
+                .cornerRadius(8)
                 .padding(.horizontal, 18)
                 .padding(.top, 9)
-                
-                Text("订阅费用将通过您的iTunes账户进行支付，您的订阅将自动续期，除非在当前期限结束前至少24小时取消，购买后可在账户设置中管理订阅。").foregroundColor(.secondary)
-                    .padding(.horizontal, 18)
                 
                 HStack {
                     Link(destination: URL(string: "https://andforce.com/privacy_app.html")!) {
@@ -120,8 +161,13 @@ public struct PayUI : View {
                     Link(destination: URL(string: "https://andforce.com/terms_of_use_app.html")!) {
                         Text("使用条款")
                     }
-                }
-                .padding(.vertical, 18)
+                }.frame(height: 25)
+                    .padding(.vertical, 4)
+                
+                Text("订阅费用将通过您的iTunes账户进行支付，您的订阅将自动续期，除非在当前期限结束前至少24小时取消，购买后可在账户设置中管理订阅。").foregroundColor(.secondary)
+                    .padding(.horizontal, 18)
+                
+                
                 Spacer()
             }
         }
@@ -141,16 +187,17 @@ public struct PayUI : View {
                 //Spacer()
                 
                 VStack {
+                    
                     Button {
                         payAction()
                     } label: {
                         Text("点解解锁").bold().foregroundColor(Color(UIColor.white))
                             .frame(maxWidth: .infinity) // 将Text的宽度设置为Button的最大宽度
-                            .frame(height: 55)
+                            .frame(height: 50)
                         
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 55)
+                    .frame(height: 50)
                     .background(Color(UIColor.systemYellow))
                     .cornerRadius(8)
                     .padding(.horizontal, 18)
@@ -161,7 +208,7 @@ public struct PayUI : View {
                         Text("恢复订阅")
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 40)
+                    .frame(height: 30)
                 }
                 .background(Color(.systemGray6).ignoresSafeArea())
                 

@@ -11,6 +11,8 @@ class RestoreRequestDelegate {
     private var _paymentHandler: (PayInfo) -> Void = {_ in}
     private var _productId: String
     private var _isRestore: Bool
+    
+    private let _payStore = PayStore.shared
 
     init(_ productId: String, _ isRestore: Bool, _ handler: @escaping (PayInfo) -> Void) {
         _productId = productId
@@ -76,13 +78,22 @@ class RestoreRequestDelegate {
 
             print("PayManager --> requestDidFinish: 获取交易信息成功, 开始验证交易信息")
             ReceiptDataVerifier.shared.verify(receipt: data) { [self] date, response in
+                let timeHave = TimeChecker.shared.checkReceiptTimeHave(date, receipt: response)
+                var payInfoSuccess: PayInfo?
+                if timeHave > 0 {
+                    payInfoSuccess  = PayInfo.create(self._productId, status: 0, netDateMs: Int64(date.timeIntervalSince1970), response: response)
+                    // 保存数据
+                    _payStore.savePayInfo(payInfoSuccess!)
+                }
                 DispatchQueue.main.async {
                     if response.count > 0 {
                         print("PayManager --> requestDidFinish: 获取交易信息成功")
-                        
-                        let timeHave = TimeChecker.shared.checkReceiptTimeHave(date, receipt: response)
                         if timeHave > 0 {
-                            self._paymentHandler(PayInfo.create(self._productId, status: 0, netDateMs: Int64(date.timeIntervalSince1970), response: response))
+                            if (payInfoSuccess == nil) {
+                                self._paymentHandler(PayInfo.createError(self._productId, status: -1))
+                            } else {
+                                self._paymentHandler(payInfoSuccess!)
+                            }
                         } else {
                             self._paymentHandler(PayInfo.createError(self._productId, status: -1))
                         }

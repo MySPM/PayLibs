@@ -10,9 +10,19 @@ import StoreKit
     private var _handler: (PayInfo) -> Void = {_ in }
     private var _isRestore = false
     private var _transactionObserver: PaymentTransactionObserver?
+    
+    private let _payStore = PayStore.shared
 
     private var _delegateProxy: RestoreRequestDelegate? = nil
 
+    public func hasPayed(_ productId: String) -> Bool {
+        return _payStore.hasPayed(productId)
+    }
+    
+    public func expireDateString(_ productId: String) -> String{
+        return _payStore.expireDateString(productId)
+    }
+    
     public func pay(_ productId: String, with handler: @escaping (PayInfo) -> Void) {
         _transactionObserver = PaymentTransactionObserver(productId, handler)
         SKPaymentQueue.default().add(_transactionObserver!)

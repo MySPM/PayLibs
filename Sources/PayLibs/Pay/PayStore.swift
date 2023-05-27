@@ -6,7 +6,7 @@
 import Foundation
 import CommonLibs
 
-@objcMembers public class PayStore: NSObject {
+class PayStore: NSObject {
     public static let shared = PayStore()
 
     private override init() {
