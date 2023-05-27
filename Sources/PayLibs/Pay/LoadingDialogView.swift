@@ -9,6 +9,9 @@ import SwiftUI
 
 struct LoadingDialogView :View{
     @Binding private var isPresented: Bool
+    
+    @Environment(\.colorScheme) var colorScheme
+
 
     init(isPresented: Binding<Bool>) {
         self._isPresented = isPresented
@@ -16,7 +19,7 @@ struct LoadingDialogView :View{
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.4)
+            Color.black.opacity(0.6)
                     .edgesIgnoringSafeArea(.all)
                     .onTapGesture {
                         //dismiss()
@@ -27,7 +30,7 @@ struct LoadingDialogView :View{
                         .progressViewStyle(CircularProgressViewStyle())
                         .padding()
             }.frame(width: 80, height: 80)
-                    .background(Color.white)
+                .background((colorScheme == .dark) ? Color.black : Color.white)
                     .cornerRadius(10)
                     .padding()
         }

@@ -13,23 +13,31 @@ public struct PayUI : View {
     @State private var isProgressShowing: Bool = false
     private let payManager = BBSPayManager.shared
     
+    var productId: String = ""
+    
+    public init(productId: String) {
+        self.productId = productId
+    }
+    
     public var body : some View {
         ZStack {
             Color(.systemGray6).ignoresSafeArea()
             
-            itemsView
-            
-            PayRestoreBtnView {
-                isProgressShowing = true
+            VStack {
+                itemsView
                 
-                payManager.pay("") { info in
-                    isProgressShowing = false
-                }
-                
-            } restoreAction: {
-                isProgressShowing = true
-                payManager.restore("") { info in
-                    isProgressShowing = false
+                PayRestoreBtnView {
+                    isProgressShowing = true
+                    
+                    payManager.pay(productId) { info in
+                        isProgressShowing = false
+                    }
+                    
+                } restoreAction: {
+                    isProgressShowing = true
+                    payManager.restore(productId) { info in
+                        isProgressShowing = false
+                    }
                 }
             }
 
@@ -44,33 +52,34 @@ public struct PayUI : View {
     private var itemsView : some View {
         ScrollView{
             VStack {
-                Text("👑").font(.system(size: 100))
-                Text("解锁高级功能").font(.largeTitle).foregroundColor(Color(.systemGray)).bold()
+                Text("👑").font(.system(size: 88))
+                
+                Text("解锁高级功能").font(.title3).foregroundColor(Color(.systemGray)).bold()
                 
                 VStack(spacing: 8) {
                     HStack {
                         Image(systemName: "checkmark").foregroundColor(Color.blue)
-                        Text("无限制发帖").font(.system(size: 25))
+                        Text("无限制发帖").font(.system(size: 20))
                         Spacer()
                     }
                     HStack {
                         Image(systemName: "checkmark").foregroundColor(Color.blue)
-                        Text("无限制回帖").font(.system(size: 25))
+                        Text("无限制回帖").font(.system(size: 20))
                         Spacer()
                     }
                     HStack {
                         Image(systemName: "checkmark").foregroundColor(Color.blue)
-                        Text("无限制搜索").font(.system(size: 25))
+                        Text("无限制搜索").font(.system(size: 20))
                         Spacer()
                     }
                     HStack {
                         Image(systemName: "checkmark").foregroundColor(Color.blue)
-                        Text("无限制发送私信").font(.system(size: 25))
+                        Text("无限制发送私信").font(.system(size: 20))
                         Spacer()
                     }
                     HStack {
                         Image(systemName: "checkmark").foregroundColor(Color.blue)
-                        Text("无限制回复私信").font(.system(size: 25))
+                        Text("无限制回复私信").font(.system(size: 20))
                         Spacer()
                     }
                     
@@ -78,11 +87,11 @@ public struct PayUI : View {
                 .padding(.top, 18)
                 .padding(.leading, 18)
                 
-                VStack(spacing: 18) {
+                VStack(spacing: 16) {
                     HStack {
                         Text("按年订阅").foregroundColor(.primary).bold().font(.system(size: 20))
                         Spacer()
-                        Text("¥12.00").bold()
+                        Text("¥12.00").foregroundColor(.primary).bold().font(.system(size: 20))
                     }.padding(.horizontal, 18)
                         .padding(.top, 18)
                     
@@ -96,7 +105,7 @@ public struct PayUI : View {
                 .background(Color(UIColor.tertiarySystemFill))
                 .cornerRadius(18)
                 .padding(.horizontal, 18)
-                .padding(.top, 18)
+                .padding(.top, 9)
                 
                 Text("订阅费用将通过您的iTunes账户进行支付，您的订阅将自动续期，除非在当前期限结束前至少24小时取消，购买后可在账户设置中管理订阅。").foregroundColor(.secondary)
                     .padding(.horizontal, 18)
@@ -129,7 +138,7 @@ public struct PayUI : View {
         
         var body: some View {
             VStack {
-                Spacer()
+                //Spacer()
                 
                 VStack {
                     Button {
@@ -164,6 +173,6 @@ public struct PayUI : View {
 
 struct PayUI_Previews: PreviewProvider {
     static var previews: some View {
-        PayUI()
+        PayUI(productId: "com.andforce.fourms.001")
     }
 }
