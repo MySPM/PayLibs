@@ -2,9 +2,9 @@ import StoreKit
 
 //typealias PayHandler = (PayInfo) -> Void
 
-@objcMembers public class BBSPayManager: NSObject, SKProductsRequestDelegate {
+@objcMembers public class PayManager: NSObject, SKProductsRequestDelegate {
     
-    public static let shared = BBSPayManager()
+    public static let shared = PayManager()
     
     private var _productID: String?
     private var _password: String?

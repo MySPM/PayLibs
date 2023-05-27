@@ -17,7 +17,7 @@ public struct PayUI : View {
     @State private var isPaySuccess: Bool = false
     @State private var statusMessage: String = ""
     
-    private let payManager = BBSPayManager.shared
+    private let payManager = PayManager.shared
     
     @Environment(\.presentationMode) private var presentationMode
     
