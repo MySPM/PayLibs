@@ -14,6 +14,14 @@ import Foundation
         super.init()
     }
 
+    func saveInternetDate(date: Date) {
+        UserDefaults.standard.set(date, forKey: "InternetDate")
+    }
+
+    func getInternetDate() -> Date? {
+        return UserDefaults.standard.object(forKey: "InternetDate") as? Date
+    }
+
     func getInternetDate(success: @escaping (Date) -> Void, failure: @escaping (Error) -> Void) {
         // 1. 创建URL
         guard let url = URL(string: AppStore.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") else {
@@ -76,6 +84,8 @@ import Foundation
                 return
             }
 
+            // 保存网络时间
+            self.saveInternetDate(date: netDate)
             DispatchQueue.main.async {
                 success(netDate)
             }

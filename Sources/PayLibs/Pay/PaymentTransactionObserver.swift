@@ -80,7 +80,7 @@ import StoreKit
                 if let error = tran.error {
                     print("PayManager --> 交易失败 error: \(error.localizedDescription)")
                 }
-                self._paymentHandler(PayInfo.createError(_productId!, status: -1))
+                self._paymentHandler(PayInfo.createError())
             default:
                 break
             }
@@ -95,17 +95,17 @@ import StoreKit
                 switch code {
                 case 0:
                     print("PayManager --> 购买成功!")
-                    _paymentHandler(PayInfo.create(_productId!, status: 0, netDateMs: Int64(date.timeIntervalSince1970), response: response))
+                    _paymentHandler(PayInfo.create(response: response))
                 case 21002:
                     print("PayManager --> 从未购买过商品")
-                    _paymentHandler(PayInfo.createError(_productId!, status: code))
+                    _paymentHandler(PayInfo.createError())
                 default:
                     print("PayManager --> 购买失败，未通过验证！")
-                    _paymentHandler(PayInfo.createError(_productId!, status: -1))
+                    _paymentHandler(PayInfo.createError())
                 }
             } else {
                 print("PayManager --> verifyPay: response is nil.")
-                _paymentHandler(PayInfo.createError(_productId!, status: -1))
+                _paymentHandler(PayInfo.createError())
             }
         }
     }
@@ -128,6 +128,6 @@ import StoreKit
                 print("PayManager --> 交易失败 error: \(error.localizedDescription)")
             }
         }
-        _paymentHandler(PayInfo.createError(_productId!, status: -1))
+        _paymentHandler(PayInfo.createError())
     }
 }

@@ -12,11 +12,6 @@ import Foundation
         return true
     }
     
-    // 状态
-    public var status: Int = -1;
-    public var productId: String = ""
-    // 网络时间：毫秒
-    public var netDataMs: Int64? = nil
     // 内购信息
     // https://www.cnblogs.com/itlover2013/p/15041526.html
     //
@@ -32,12 +27,9 @@ import Foundation
         super.init()
     }
 
-    public static func create(_ productId: String, status: Int, netDateMs: Int64, response: Dictionary<String, Any>) -> PayInfo {
+    public static func create(response: Dictionary<String, Any>) -> PayInfo {
         let payInfo = PayInfo()
-        payInfo.productId = productId
-        payInfo.status = status
-        payInfo.netDataMs = netDateMs
-        
+
         var lastInAppsArr = [InAppBean]()
         if let last_receipt_infos = response["latest_receipt_info"] as? [[String: Any]] {
             for item in last_receipt_infos {
@@ -84,22 +76,16 @@ import Foundation
         return bean
     }
 
-    public static func createError(_ productId: String, status: Int) -> PayInfo {
-        return create(productId, status: status, netDateMs: 0, response: Dictionary())
+    public static func createError() -> PayInfo {
+        return create(response: Dictionary())
     }
 
     public func encode(with coder: NSCoder) {
-        coder.encode(status, forKey: "status")
-        coder.encode(productId, forKey: "productId")
-        coder.encode(netDataMs, forKey: "netDataMs")
         coder.encode(inApps, forKey: "inApps")
     }
 
     required convenience public init?(coder: NSCoder) {
         self.init()
-        status = coder.decodeInteger(forKey: "status")
-        productId = coder.decodeObject(forKey: "productId") as? String ?? ""
-        netDataMs = coder.decodeObject(forKey: "netDataMs") as? Int64
         inApps = coder.decodeArrayOfObjects(ofClass: InAppBean.self, forKey: "inApps")
     }
 
@@ -107,18 +93,12 @@ import Foundation
         if inApps == nil {
             return """
                     PayInfo(
-                        status: \(status),
-                        productId: \(productId),
-                        netDataMs: \(String(describing: netDataMs)),
                         inApps: []
                     )
                     """
         } else {
             return """
                     PayInfo(
-                        status: \(status),
-                        productId: \(productId),
-                        netDataMs: \(String(describing: netDataMs)),
                         inApps:
                                 \(inApps!)
                     )
@@ -278,6 +258,10 @@ import Foundation
 
     public func isCanceled() -> Bool {
         return cancellationDate != ""
+    }
+
+    public func isPurchase() -> Bool {
+        return inAppOwnershipType == "PURCHASED"
     }
     
     private func expiresDateCurrentTimezone() -> String{

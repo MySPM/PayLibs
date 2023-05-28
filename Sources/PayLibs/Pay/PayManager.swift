@@ -17,12 +17,12 @@ import StoreKit
 
     private var _delegateProxy: AppStoreRequestDelegate? = nil
 
-    public func hasPayed(_ productId: String) -> Bool {
-        return _payStore.hasPayed(productId)
+    public func hasPayed(_ productId: String, isSubscription: Bool) -> Bool {
+        return _payStore.hasPayed(productId, isSubscription: isSubscription)
     }
     
-    public func expireDateMs(_ productId: String) -> Int64 {
-        return _payStore.expireDateMs(productId: productId)
+    public func expireDateMs(_ productId: String, isSubscription: Bool) -> Int64 {
+        return _payStore.expireDateMs(productId: productId, isSubscription: isSubscription)
     }
     
     public func pay(_ productId: String, password: String?, with handler: @escaping (PayInfo) -> Void) {
@@ -44,7 +44,7 @@ import StoreKit
         } else {
             print("PayManager --> 应用没有开启内购权限")
             DispatchQueue.main.async {
-                self._handler(PayInfo.createError(productId, status: -1))
+                self._handler(PayInfo.createError())
             }
         }
     }
@@ -73,9 +73,9 @@ import StoreKit
             DispatchQueue.main.async {
                 if dictionary.isEmpty {
                     print("PayManager --> verifyPay: 获取网络时间失败，没法验证是否购买了")
-                    handler(PayInfo.createError(self._productID!, status: -1))
+                    handler(PayInfo.createError())
                 } else {
-                    let info = PayInfo.create(self._productID!, status: 0, netDateMs: Int64(date.timeIntervalSince1970), response: dictionary)
+                    let info = PayInfo.create(response: dictionary)
                     self._payStore.savePayInfo(info)
                     handler(info)
                 }

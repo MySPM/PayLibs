@@ -25,7 +25,7 @@ class AppStoreRequestDelegate {
     func requestDidFail(_ request: SKRequest, didFailWithError error: Error) {
         print("--->> Pay: error: \(error)")
         DispatchQueue.main.async {
-            self._paymentHandler(PayInfo.createError(self._productId, status: -1))
+            self._paymentHandler(PayInfo.createError())
         }
     }
 
@@ -86,7 +86,7 @@ class AppStoreRequestDelegate {
 
             guard let data else {
                 DispatchQueue.main.async {
-                    self._paymentHandler(PayInfo.createError(self._productId, status: -1))
+                    self._paymentHandler(PayInfo.createError())
                 }
                 return
             }
@@ -96,7 +96,7 @@ class AppStoreRequestDelegate {
                 let timeHave = TimeChecker.shared.checkReceiptTimeHave(date, receipt: response)
                 var payInfoSuccess: PayInfo?
                 if timeHave > 0 {
-                    payInfoSuccess  = PayInfo.create(self._productId, status: 0, netDateMs: Int64(date.timeIntervalSince1970), response: response)
+                    payInfoSuccess  = PayInfo.create(response: response)
                     // 保存数据
                     _payStore.savePayInfo(payInfoSuccess!)
                 }
@@ -105,16 +105,16 @@ class AppStoreRequestDelegate {
                         print("PayManager --> requestDidFinish: 获取交易信息成功")
                         if timeHave > 0 {
                             if (payInfoSuccess == nil) {
-                                self._paymentHandler(PayInfo.createError(self._productId, status: -1))
+                                self._paymentHandler(PayInfo.createError())
                             } else {
                                 self._paymentHandler(payInfoSuccess!)
                             }
                         } else {
-                            self._paymentHandler(PayInfo.createError(self._productId, status: -1))
+                            self._paymentHandler(PayInfo.createError())
                         }
                     } else {
                         print("PayManager --> requestDidFinish: 获取网络时间失败，没法验证是否购买了")
-                        self._paymentHandler(PayInfo.createError(self._productId, status: -1))
+                        self._paymentHandler(PayInfo.createError())
                     }
                 }
             }
