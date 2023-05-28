@@ -5,14 +5,14 @@ import StoreKit
 @objcMembers public class PayManager: NSObject, SKProductsRequestDelegate {
     
     public static let shared = PayManager()
+    private let _transactionObserver = PaymentTransactionObserver.shared
     
     private var _productID: String?
     private var _password: String?
     
     private var _handler: (PayInfo) -> Void = {_ in }
     private var _isRestore = false
-    private var _transactionObserver: PaymentTransactionObserver?
-    
+
     private let _payStore = PayStore.shared
 
     private var _delegateProxy: AppStoreRequestDelegate? = nil
@@ -26,8 +26,7 @@ import StoreKit
     }
     
     public func pay(_ productId: String, password: String?, with handler: @escaping (PayInfo) -> Void) {
-        _transactionObserver = PaymentTransactionObserver(productId, password, handler)
-        SKPaymentQueue.default().add(_transactionObserver!)
+        _transactionObserver.setProductInfo(productId, password, handler)
 
         _handler = handler
         _productID = productId
@@ -88,11 +87,12 @@ import StoreKit
         TimeChecker.shared.checkReceiptTimeHave(currentTime, receipt: receipt)
     }
 
+    public func addObserver() {
+        SKPaymentQueue.default().add(_transactionObserver)
+    }
 
-    public func removeTransactionObserver() {
-        if let observer = _transactionObserver {
-            SKPaymentQueue.default().remove(observer)
-        }
+    public func removeObserver() {
+        SKPaymentQueue.default().remove(_transactionObserver)
     }
 
     // SKProductsRequestDelegate methods

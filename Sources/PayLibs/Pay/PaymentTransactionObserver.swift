@@ -8,15 +8,20 @@ import StoreKit
 
 @objcMembers class PaymentTransactionObserver: NSObject, SKPaymentTransactionObserver {
 
+    static let shared = PaymentTransactionObserver()
+
     private var _paymentHandler: (PayInfo) -> Void = {_ in}
     private var _productId: String? = nil
     private var _password: String? = nil
 
-    init(_ productId: String, _ password: String?, _ handler: @escaping (PayInfo) -> Void) {
+    private override init() {
         super.init()
+    }
+
+    func setProductInfo(_ productId: String, _ password: String?, _ handler: @escaping (PayInfo) -> Void) {
         _productId = productId
-        _paymentHandler = handler
         _password = password
+        _paymentHandler = handler
     }
 
     /**
@@ -46,9 +51,23 @@ import StoreKit
             switch tran.transactionState {
             case .purchasing:
                 print("PayManager --> 商品添加进列表")
+            case .purchased:
+                SKPaymentQueue.default().finishTransaction(tran)
                 
-            case .purchased, .restored:
-                print("PayManager --> 交易已经支付，开始验证")
+                if (tran.original != nil) {
+                    // 说明是自动续期
+                    print("PayManager --> 出发自动续期，不用开始验证")
+
+                } else {
+                    // 首次购买
+                    
+                    print("PayManager --> 首次交易已经支付，开始验证")
+                    
+                    // 异步方法验证
+                    verify()
+                }
+            case .restored:
+                print("PayManager --> 恢复操作完成，开始验证")
                 SKPaymentQueue.default().finishTransaction(tran)
                 
                 // 异步方法验证

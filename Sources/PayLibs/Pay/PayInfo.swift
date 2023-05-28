@@ -85,6 +85,29 @@ import Foundation
         inApps = coder.decodeArrayOfObjects(ofClass: InAppBean.self, forKey: "inApps")
     }
 
+    public override var description: String {
+        if inApps == nil {
+            return """
+                    PayInfo(
+                        status: \(status),
+                        productId: \(productId),
+                        netDataMs: \(String(describing: netDataMs)),
+                        inApps: []
+                    )
+                    """
+        } else {
+            return """
+                    PayInfo(
+                        status: \(status),
+                        productId: \(productId),
+                        netDataMs: \(String(describing: netDataMs)),
+                        inApps:
+                                \(inApps!)
+                    )
+                    """
+        }
+        
+    }
 }
 
 
@@ -229,45 +252,45 @@ import Foundation
     public override var description: String {
         if isAutoSubscription() {
             return """
-                   {
-                       expiresDate: \(expiresDate),
-                       expiresDateCurrentTimezone: \(self.expiresDateCurrentTimezone()),
-                       expiresDateMs: \(expiresDateMs), 
-                       expiresDatePst: \(expiresDatePst), 
-                       inAppOwnershipType: \(inAppOwnershipType), 
-                       isInIntroOfferPeriod: \(isInIntroOfferPeriod), 
-                       isTrialPeriod: \(isTrialPeriod), 
-                       originalPurchaseDate: \(originalPurchaseDate), 
-                       originalPurchaseDateMs: \(originalPurchaseDateMs), 
-                       originalPurchaseDatePst: \(originalPurchaseDatePst), 
-                       originalTransactionId: \(originalTransactionId), 
-                       productId: \(productId), 
-                       purchaseDate: \(purchaseDate), 
-                       purchaseDateMs: \(purchaseDateMs), 
-                       purchaseDatePst: \(purchaseDatePst), 
-                       quantity: \(quantity), 
-                       subscriptionGroupIdentifier: \(subscriptionGroupIdentifier), 
-                       transactionId: \(transactionId), 
-                       webOrderLineItemId: \(webOrderLineItemId)
-                   }
+                   \r\n\t\t{
+                   \t\t    expiresDate: \(expiresDate),
+                   \t\t    expiresDateCurrentTimezone: \(self.expiresDateCurrentTimezone()),
+                   \t\t    expiresDateMs: \(expiresDateMs), 
+                   \t\t    expiresDatePst: \(expiresDatePst), 
+                   \t\t    inAppOwnershipType: \(inAppOwnershipType), 
+                   \t\t    isInIntroOfferPeriod: \(isInIntroOfferPeriod), 
+                   \t\t    isTrialPeriod: \(isTrialPeriod), 
+                   \t\t    originalPurchaseDate: \(originalPurchaseDate), 
+                   \t\t    originalPurchaseDateMs: \(originalPurchaseDateMs), 
+                   \t\t    originalPurchaseDatePst: \(originalPurchaseDatePst), 
+                   \t\t    originalTransactionId: \(originalTransactionId), 
+                   \t\t    productId: \(productId), 
+                   \t\t    purchaseDate: \(purchaseDate), 
+                   \t\t    purchaseDateMs: \(purchaseDateMs), 
+                   \t\t    purchaseDatePst: \(purchaseDatePst), 
+                   \t\t    quantity: \(quantity), 
+                   \t\t    subscriptionGroupIdentifier: \(subscriptionGroupIdentifier), 
+                   \t\t    transactionId: \(transactionId), 
+                   \t\t    webOrderLineItemId: \(webOrderLineItemId)
+                   \t\t}
                    """
         } else {
             return """
-                   {
-                       inAppOwnershipType: \(inAppOwnershipType), 
-                       isInIntroOfferPeriod: \(isInIntroOfferPeriod), 
-                       isTrialPeriod: \(isTrialPeriod), 
-                       originalPurchaseDate: \(originalPurchaseDate), 
-                       originalPurchaseDateMs: \(originalPurchaseDateMs), 
-                       originalPurchaseDatePst: \(originalPurchaseDatePst), 
-                       originalTransactionId: \(originalTransactionId), 
-                       productId: \(productId), 
-                       purchaseDate: \(purchaseDate), 
-                       purchaseDateMs: \(purchaseDateMs), 
-                       purchaseDatePst: \(purchaseDatePst), 
-                       quantity: \(quantity), 
-                       transactionId: \(transactionId), 
-                   }
+                   \r\n\t\t{
+                   \t\t    inAppOwnershipType: \(inAppOwnershipType), 
+                   \t\t    isInIntroOfferPeriod: \(isInIntroOfferPeriod), 
+                   \t\t    isTrialPeriod: \(isTrialPeriod), 
+                   \t\t    originalPurchaseDate: \(originalPurchaseDate), 
+                   \t\t    originalPurchaseDateMs: \(originalPurchaseDateMs), 
+                   \t\t    originalPurchaseDatePst: \(originalPurchaseDatePst), 
+                   \t\t    originalTransactionId: \(originalTransactionId), 
+                   \t\t    productId: \(productId), 
+                   \t\t    purchaseDate: \(purchaseDate), 
+                   \t\t    purchaseDateMs: \(purchaseDateMs), 
+                   \t\t    purchaseDatePst: \(purchaseDatePst), 
+                   \t\t    quantity: \(quantity), 
+                   \t\t    transactionId: \(transactionId), 
+                   \t\t}
                    """
         }
     }
