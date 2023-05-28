@@ -92,7 +92,7 @@ class AppStoreRequestDelegate {
             }
 
             print("PayManager --> requestDidFinish: 获取交易信息成功, 开始验证交易信息")
-            ReceiptDataVerifier.shared.verify(receipt: data) { [self] date, response in
+            ReceiptDataVerifier.shared.verifyAfterInternetTime(receipt: data) { [self] date, response in
                 let timeHave = TimeChecker.shared.checkReceiptTimeHave(date, receipt: response)
                 var payInfoSuccess: PayInfo?
                 if timeHave > 0 {

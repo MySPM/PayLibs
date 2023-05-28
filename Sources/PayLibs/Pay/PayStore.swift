@@ -71,7 +71,7 @@ class PayStore: NSObject {
             return 0
         }
 
-        guard let inApps = isSubscription ? payInfo.latestReceiptInnfo : payInfo.inApps else {
+        guard let inApps = isSubscription ? payInfo.latestReceiptInfo : payInfo.inApps else {
             return 0
         }
 

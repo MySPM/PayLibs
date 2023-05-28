@@ -21,7 +21,7 @@ import Foundation
     //（2）自动续订订阅类型可以配置试用，试用记录只有在latest_receipt_info里，is_trial_period字段才是true
     //（3）消耗型购买记录有可能不会出现在latest_receipt_info，因此需要检查in_app来确保校验正确
     public var inApps:[InAppBean]? = nil
-    public var latestReceiptInnfo:[InAppBean]? = nil
+    public var latestReceiptInfo:[InAppBean]? = nil
 
     override init() {
         super.init()
@@ -37,7 +37,7 @@ import Foundation
                 lastInAppsArr.append(bean)
             }
         }
-        payInfo.latestReceiptInnfo = lastInAppsArr
+        payInfo.latestReceiptInfo = lastInAppsArr
         
         var inAppsArr = [InAppBean]()
         if let receiptDic = response["receipt"] as? [String: Any], let inApps = receiptDic["in_app"] as? [[String: Any]] {
@@ -82,29 +82,27 @@ import Foundation
 
     public func encode(with coder: NSCoder) {
         coder.encode(inApps, forKey: "inApps")
+        coder.encode(latestReceiptInfo, forKey: "latestReceiptInfo")
     }
 
     required convenience public init?(coder: NSCoder) {
         self.init()
         inApps = coder.decodeArrayOfObjects(ofClass: InAppBean.self, forKey: "inApps")
+        latestReceiptInfo = coder.decodeArrayOfObjects(ofClass: InAppBean.self, forKey: "latestReceiptInfo")
     }
 
     public override var description: String {
-        if inApps == nil {
-            return """
-                    PayInfo(
-                        inApps: []
-                    )
-                    """
-        } else {
-            return """
-                    PayInfo(
-                        inApps:
-                                \(inApps!)
-                    )
-                    """
-        }
-        
+        let inApps = inApps == nil ? [] : inApps!
+        let latestReceiptInfo = latestReceiptInfo == nil ? [] : latestReceiptInfo!
+
+        return """
+               PayInfo(
+                   inApps:
+                           \(inApps),
+                   latestReceiptInfo:
+                           \(latestReceiptInfo)
+               )
+               """
     }
 }
 
@@ -229,27 +227,97 @@ import Foundation
     }
 
     required public init?(coder: NSCoder) {
-        expiresDate = coder.decodeObject(forKey: "expires_date") as? String ?? ""
+        if let decodedExpression = coder.decodeObject(of: NSString.self, forKey: "expires_date") as String? {
+            expiresDate = decodedExpression
+        } else {
+            expiresDate = ""
+        }
+
         expiresDateMs = coder.decodeInt64(forKey: "expires_date_ms")
-        expiresDatePst = coder.decodeObject(forKey: "expires_date_pst") as? String ?? ""
-        inAppOwnershipType = coder.decodeObject(forKey: "in_app_ownership_type") as? String ?? ""
+        //expiresDatePst = coder.decodeObject(forKey: "expires_date_pst") as? String ?? ""
+        if let expiresDatePst = coder.decodeObject(of: NSString.self, forKey: "expires_date_pst") as String? {
+            self.expiresDatePst = expiresDatePst
+        } else {
+            self.expiresDatePst = ""
+        }
+        //inAppOwnershipType = coder.decodeObject(forKey: "in_app_ownership_type") as? String ?? ""
+        if let inAppOwnershipType = coder.decodeObject(of: NSString.self, forKey: "in_app_ownership_type") as String? {
+            self.inAppOwnershipType = inAppOwnershipType
+        } else {
+            self.inAppOwnershipType = ""
+        }
         isInIntroOfferPeriod = coder.decodeBool(forKey: "is_in_intro_offer_period")
         isTrialPeriod = coder.decodeBool(forKey: "is_trial_period")
-        cancellationDate = coder.decodeObject(forKey: "cancellation_date") as? String ?? ""
+        //cancellationDate = coder.decodeObject(forKey: "cancellation_date") as? String ?? ""
+        if let cancellationDate = coder.decodeObject(of: NSString.self, forKey: "cancellation_date") as String? {
+            self.cancellationDate = cancellationDate
+        } else {
+            self.cancellationDate = ""
+        }
         cancellationDateMs = coder.decodeInt64(forKey: "cancellation_date_ms")
-        cancellationDatePst = coder.decodeObject(forKey: "cancellation_date_pst") as? String ?? ""
-        originalPurchaseDate = coder.decodeObject(forKey: "original_purchase_date") as? String ?? ""
+        //cancellationDatePst = coder.decodeObject(forKey: "cancellation_date_pst") as? String ?? ""
+        if let cancellationDatePst = coder.decodeObject(of: NSString.self, forKey: "cancellation_date_pst") as String? {
+            self.cancellationDatePst = cancellationDatePst
+        } else {
+            self.cancellationDatePst = ""
+        }
+        //originalPurchaseDate = coder.decodeObject(forKey: "original_purchase_date") as? String ?? ""
+        if let originalPurchaseDate = coder.decodeObject(of: NSString.self, forKey: "original_purchase_date") as String? {
+            self.originalPurchaseDate = originalPurchaseDate
+        } else {
+            self.originalPurchaseDate = ""
+        }
         originalPurchaseDateMs = coder.decodeInt64(forKey: "original_purchase_date_ms")
-        originalPurchaseDatePst = coder.decodeObject(forKey: "original_purchase_date_pst") as? String ?? ""
-        originalTransactionId = coder.decodeObject(forKey: "original_transaction_id") as? String ?? ""
-        productId = coder.decodeObject(forKey: "product_id") as? String ?? ""
-        purchaseDate = coder.decodeObject(forKey: "purchase_date") as? String ?? ""
+        //originalPurchaseDatePst = coder.decodeObject(forKey: "original_purchase_date_pst") as? String ?? ""
+        if let originalPurchaseDatePst = coder.decodeObject(of: NSString.self, forKey: "original_purchase_date_pst") as String? {
+            self.originalPurchaseDatePst = originalPurchaseDatePst
+        } else {
+            self.originalPurchaseDatePst = ""
+        }
+        //originalTransactionId = coder.decodeObject(forKey: "original_transaction_id") as? String ?? ""
+        if let originalTransactionId = coder.decodeObject(of: NSString.self, forKey: "original_transaction_id") as String? {
+            self.originalTransactionId = originalTransactionId
+        } else {
+            self.originalTransactionId = ""
+        }
+        //productId = coder.decodeObject(forKey: "product_id") as? String ?? ""
+        if let productId = coder.decodeObject(of: NSString.self, forKey: "product_id") as String? {
+            self.productId = productId
+        } else {
+            self.productId = ""
+        }
+        //purchaseDate = coder.decodeObject(forKey: "purchase_date") as? String ?? ""
+        if let purchaseDate = coder.decodeObject(of: NSString.self, forKey: "purchase_date") as String? {
+            self.purchaseDate = purchaseDate
+        } else {
+            self.purchaseDate = ""
+        }
         purchaseDateMs = coder.decodeInt64(forKey: "purchase_date_ms")
-        purchaseDatePst = coder.decodeObject(forKey: "purchase_date_pst") as? String ?? ""
+        //purchaseDatePst = coder.decodeObject(forKey: "purchase_date_pst") as? String ?? ""
+        if let purchaseDatePst = coder.decodeObject(of: NSString.self, forKey: "purchase_date_pst") as String? {
+            self.purchaseDatePst = purchaseDatePst
+        } else {
+            self.purchaseDatePst = ""
+        }
         quantity = coder.decodeInteger(forKey: "quantity")
-        subscriptionGroupIdentifier = coder.decodeObject(forKey: "subscription_group_identifier") as? String ?? ""
-        transactionId = coder.decodeObject(forKey: "transaction_id") as? String ?? ""
-        webOrderLineItemId = coder.decodeObject(forKey: "web_order_line_item_id") as? String ?? ""
+        //subscriptionGroupIdentifier = coder.decodeObject(forKey: "subscription_group_identifier") as? String ?? ""
+        if let subscriptionGroupIdentifier = coder.decodeObject(of: NSString.self, forKey: "subscription_group_identifier") as String? {
+            self.subscriptionGroupIdentifier = subscriptionGroupIdentifier
+        } else {
+            self.subscriptionGroupIdentifier = ""
+        }
+        //transactionId = coder.decodeObject(forKey: "transaction_id") as? String ?? ""
+        if let transactionId = coder.decodeObject(of: NSString.self, forKey: "transaction_id") as String? {
+            self.transactionId = transactionId
+        } else {
+            self.transactionId = ""
+        }
+        //webOrderLineItemId = coder.decodeObject(forKey: "web_order_line_item_id") as? String ?? ""
+        if let webOrderLineItemId = coder.decodeObject(of: NSString.self, forKey: "web_order_line_item_id") as String? {
+            self.webOrderLineItemId = webOrderLineItemId
+        } else {
+            self.webOrderLineItemId = ""
+        }
     }
 
     public func isAutoSubscription() -> Bool {

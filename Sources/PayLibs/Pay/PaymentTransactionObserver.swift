@@ -57,21 +57,18 @@ import StoreKit
                 if (tran.original != nil) {
                     // 说明是自动续期
                     print("PayManager --> 出发自动续期，不用开始验证")
-
                 } else {
                     // 首次购买
-                    
                     print("PayManager --> 首次交易已经支付，开始验证")
-                    
-                    // 异步方法验证
-                    verify()
                 }
+                // 异步方法验证
+                verifyLocal()
             case .restored:
                 print("PayManager --> 恢复操作完成，开始验证")
                 SKPaymentQueue.default().finishTransaction(tran)
                 
                 // 异步方法验证
-                verify()
+                verifyLocal()
 
             case .failed:
                 SKPaymentQueue.default().finishTransaction(tran)
@@ -87,7 +84,7 @@ import StoreKit
         }
     }
 
-    private func verify() {
+    private func verifyLocal() {
         ReceiptDataVerifier.shared.verifyLocal(password: _password) { [self] (date, response) in
             
             if !response.isEmpty, let code = response["status"] as? Int {

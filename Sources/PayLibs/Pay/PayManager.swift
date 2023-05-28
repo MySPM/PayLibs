@@ -63,23 +63,19 @@ import StoreKit
     }
 
 
-    public func verifyLocal(_ productId: String, password: String, with handler: @escaping (PayInfo) -> Void) {
-        _productID = productId
-        _password = password
+    public func verifyLocal(password: String) {
 
-        print("PayManager --> verifyPay:\tproductId:\(String(describing: _productID))")
+        print("PayManager --> verifyLocal()")
 
         ReceiptDataVerifier.shared.verifyLocal(password: password) { (date, dictionary) in
-            DispatchQueue.main.async {
-                if dictionary.isEmpty {
-                    print("PayManager --> verifyPay: 获取网络时间失败，没法验证是否购买了")
-                    handler(PayInfo.createError())
-                } else {
-                    let info = PayInfo.create(response: dictionary)
-                    self._payStore.savePayInfo(info)
-                    handler(info)
-                }
+            let isEmpty = dictionary.isEmpty
+            if isEmpty {
+                print("PayManager --> verifyPay: 获取网络时间失败，没法验证是否购买了")
             }
+            
+            let info = isEmpty ? PayInfo.createError() : PayInfo.create(response: dictionary)
+            self._payStore.savePayInfo(info)
+            print("PayManager --> verifyPay: savePayInfo. data is empty: \(isEmpty)")
         }
     }
 

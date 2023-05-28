@@ -16,7 +16,7 @@ import Foundation
     private let SANDBOX = "https://sandbox.itunes.apple.com/verifyReceipt"
     private let AppStore = "https://buy.itunes.apple.com/verifyReceipt"
 
-    func verify(receipt: Data, handler: @escaping (Date, Dictionary<String, Any>) -> Void) {
+    func verifyAfterInternetTime(receipt: Data, handler: @escaping (Date, Dictionary<String, Any>) -> Void) {
         // 先检查网络时间
         InternetTimeFetcher.shared.getInternetDate(success: { [self] date in
             // 向苹果服务器验证凭证
@@ -45,7 +45,7 @@ import Foundation
             handler(Date(), Dictionary())
             return
         }
-        verify(receipt: data, handler: handler)
+        verifyAfterInternetTime(receipt: data, handler: handler)
     }
     
     private func post(url: String, receiptData: Data, handler: @escaping (Dictionary<String, Any>) -> Void) {
@@ -74,7 +74,7 @@ import Foundation
                 handler(Dictionary())
                 return
             }
-            print("PayManager --> verify->:\tverifyWithUrl() \(URL): 验证返回数据: \(dic)")
+            print("PayManager --> verify->:\tverifyWithUrl() \(URL): 验证返回数据 数量: \(dic.count), 太长不需要打印")
             handler(dic)
         }
 
