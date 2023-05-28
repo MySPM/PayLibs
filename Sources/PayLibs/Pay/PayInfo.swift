@@ -18,7 +18,15 @@ import Foundation
     // 网络时间：毫秒
     public var netDataMs: Int64? = nil
     // 内购信息
+    // https://www.cnblogs.com/itlover2013/p/15041526.html
+    //
+    //in_app与latest_receipt_info
+    // 测试时发现，这两个字段的数值几乎相同，不过有几点需要注意：
+    //（1）自动续订订阅类型，在到期后会再生成一条购买记录，这条记录会出现在last_receipt_info里，但不会出现在in_app里
+    //（2）自动续订订阅类型可以配置试用，试用记录只有在latest_receipt_info里，is_trial_period字段才是true
+    //（3）消耗型购买记录有可能不会出现在latest_receipt_info，因此需要检查in_app来确保校验正确
     public var inApps:[InAppBean]? = nil
+    public var latestReceiptInnfo:[InAppBean]? = nil
 
     override init() {
         super.init()
@@ -29,41 +37,51 @@ import Foundation
         payInfo.productId = productId
         payInfo.status = status
         payInfo.netDataMs = netDateMs
-
+        
+        var lastInAppsArr = [InAppBean]()
+        if let last_receipt_infos = response["latest_receipt_info"] as? [[String: Any]] {
+            for item in last_receipt_infos {
+                let bean = toInApp(item: item)
+                lastInAppsArr.append(bean)
+            }
+        }
+        payInfo.latestReceiptInnfo = lastInAppsArr
+        
         var inAppsArr = [InAppBean]()
         if let receiptDic = response["receipt"] as? [String: Any], let inApps = receiptDic["in_app"] as? [[String: Any]] {
             for item in inApps {
-                guard let in_app_ownership_type = item["in_app_ownership_type"], in_app_ownership_type as! String == "PURCHASED" else {
-                    continue
-                }
-
-                let bean = InAppBean()
-                bean.expiresDate = item["expires_date"] as? String ?? ""
-                bean.expiresDateMs = Int64(item["expires_date_ms"] as? String ?? "0")!
-                bean.expiresDatePst = item["expires_date_pst"] as? String ?? ""
-                bean.inAppOwnershipType = item["in_app_ownership_type"] as? String ?? ""
-                bean.isInIntroOfferPeriod = item["is_in_intro_offer_period"] as? Bool ?? false
-                bean.isTrialPeriod = item["is_trial_period"] as? Bool ?? false
-                bean.originalPurchaseDate = item["original_purchase_date"] as? String ?? ""
-                bean.originalPurchaseDateMs = Int64(item["original_purchase_date_ms"] as? String ?? "0")!
-                bean.originalPurchaseDatePst = item["original_purchase_date_pst"] as? String ?? ""
-                bean.originalTransactionId = item["original_transaction_id"] as? String ?? ""
-                bean.productId = item["product_id"] as? String ?? ""
-                bean.purchaseDate = item["purchase_date"] as? String ?? ""
-                bean.purchaseDateMs = Int64(item["purchase_date_ms"] as? String ?? "0")!
-                bean.purchaseDatePst = item["purchase_date_pst"] as? String ?? ""
-                bean.quantity = Int(item["quantity"] as? String ?? "0")!
-                bean.subscriptionGroupIdentifier = item["subscription_group_identifier"] as? String ?? ""
-                bean.transactionId = item["transaction_id"] as? String ?? ""
-                bean.webOrderLineItemId = item["web_order_line_item_id"] as? String ?? ""
-
+                let bean = toInApp(item: item)
                 inAppsArr.append(bean)
             }
         }
-
-        //let nsArray = NSArray(array: inAppsArr)
         payInfo.inApps = inAppsArr
         return payInfo
+    }
+
+    private static func toInApp(item: [String:Any]) -> InAppBean {
+        let bean = InAppBean()
+        bean.expiresDate = item["expires_date"] as? String ?? ""
+        bean.expiresDateMs = Int64(item["expires_date_ms"] as? String ?? "0")!
+        bean.expiresDatePst = item["expires_date_pst"] as? String ?? ""
+        bean.inAppOwnershipType = item["in_app_ownership_type"] as? String ?? ""
+        bean.isInIntroOfferPeriod = item["is_in_intro_offer_period"] as? Bool ?? false
+        bean.isTrialPeriod = item["is_trial_period"] as? Bool ?? false
+        bean.cancellationDate = item["cancellation_date"] as? String ?? ""
+        bean.cancellationDateMs = Int64(item["cancellation_date_ms"] as? String ?? "0")!
+        bean.cancellationDatePst = item["cancellation_date_pst"] as? String ?? ""
+        bean.originalPurchaseDate = item["original_purchase_date"] as? String ?? ""
+        bean.originalPurchaseDateMs = Int64(item["original_purchase_date_ms"] as? String ?? "0")!
+        bean.originalPurchaseDatePst = item["original_purchase_date_pst"] as? String ?? ""
+        bean.originalTransactionId = item["original_transaction_id"] as? String ?? ""
+        bean.productId = item["product_id"] as? String ?? ""
+        bean.purchaseDate = item["purchase_date"] as? String ?? ""
+        bean.purchaseDateMs = Int64(item["purchase_date_ms"] as? String ?? "0")!
+        bean.purchaseDatePst = item["purchase_date_pst"] as? String ?? ""
+        bean.quantity = Int(item["quantity"] as? String ?? "0")!
+        bean.subscriptionGroupIdentifier = item["subscription_group_identifier"] as? String ?? ""
+        bean.transactionId = item["transaction_id"] as? String ?? ""
+        bean.webOrderLineItemId = item["web_order_line_item_id"] as? String ?? ""
+        return bean
     }
 
     public static func createError(_ productId: String, status: Int) -> PayInfo {
@@ -118,6 +136,9 @@ import Foundation
     ////    "expires_date": "2023-05-27 17:20:21 Etc/GMT",
     ////    "expires_date_ms": 1685208021000,
     ////    "expires_date_pst": "2023-05-27 10:20:21 America/Los_Angeles",
+//            "cancellation_date": "2019-12-05 19:14:48 Etc/GMT",
+//            "cancellation_date_ms": "1575573288000",
+//            "cancellation_date_pst": "2019-12-05 11:14:48 America/Los_Angeles",
 
     //    "in_app_ownership_type": "PURCHASED",
     ////    "is_in_intro_offer_period": false,
@@ -138,6 +159,9 @@ import Foundation
     
 
     // {
+//"cancellation_date": "2019-12-05 19:14:48 Etc/GMT",
+//"cancellation_date_ms": "1575573288000",
+//"cancellation_date_pst": "2019-12-05 11:14:48 America/Los_Angeles",
     //            "in_app_ownership_type" = PURCHASED;
     //            "is_trial_period" = false;
     //            "original_purchase_date" = "2023-05-27 10:03:25 Etc/GMT";
@@ -176,10 +200,16 @@ import Foundation
     public var inAppOwnershipType: String = ""
     public var isInIntroOfferPeriod: Bool = false
     public var isTrialPeriod: Bool = false
+    // 用户退款时间，如果存在，说明用户已经退款
+    public var cancellationDate: String = ""
+    public var cancellationDateMs: Int64 = 0
+    public var cancellationDatePst: String = ""
+
     public var originalPurchaseDate: String = ""
     public var originalPurchaseDateMs: Int64 = 0
     public var originalPurchaseDatePst: String = ""
     public var originalTransactionId: String = ""
+
     public var productId: String = ""
     public var purchaseDate: String = ""
     public var purchaseDateMs: Int64 = 0
@@ -200,6 +230,9 @@ import Foundation
         coder.encode(inAppOwnershipType, forKey: "in_app_ownership_type")
         coder.encode(isInIntroOfferPeriod, forKey: "is_in_intro_offer_period")
         coder.encode(isTrialPeriod, forKey: "is_trial_period")
+        coder.encode(cancellationDate, forKey: "cancellation_date")
+        coder.encode(cancellationDateMs, forKey: "cancellation_date_ms")
+        coder.encode(cancellationDatePst, forKey: "cancellation_date_pst")
         coder.encode(originalPurchaseDate, forKey: "original_purchase_date")
         coder.encode(originalPurchaseDateMs, forKey: "original_purchase_date_ms")
         coder.encode(originalPurchaseDatePst, forKey: "original_purchase_date_pst")
@@ -222,6 +255,9 @@ import Foundation
         inAppOwnershipType = coder.decodeObject(forKey: "in_app_ownership_type") as? String ?? ""
         isInIntroOfferPeriod = coder.decodeBool(forKey: "is_in_intro_offer_period")
         isTrialPeriod = coder.decodeBool(forKey: "is_trial_period")
+        cancellationDate = coder.decodeObject(forKey: "cancellation_date") as? String ?? ""
+        cancellationDateMs = coder.decodeInt64(forKey: "cancellation_date_ms")
+        cancellationDatePst = coder.decodeObject(forKey: "cancellation_date_pst") as? String ?? ""
         originalPurchaseDate = coder.decodeObject(forKey: "original_purchase_date") as? String ?? ""
         originalPurchaseDateMs = coder.decodeInt64(forKey: "original_purchase_date_ms")
         originalPurchaseDatePst = coder.decodeObject(forKey: "original_purchase_date_pst") as? String ?? ""
@@ -238,6 +274,10 @@ import Foundation
 
     public func isAutoSubscription() -> Bool {
         return expiresDate != ""
+    }
+
+    public func isCanceled() -> Bool {
+        return cancellationDate != ""
     }
     
     private func expiresDateCurrentTimezone() -> String{
@@ -260,6 +300,9 @@ import Foundation
                    \t\t    inAppOwnershipType: \(inAppOwnershipType), 
                    \t\t    isInIntroOfferPeriod: \(isInIntroOfferPeriod), 
                    \t\t    isTrialPeriod: \(isTrialPeriod), 
+                   \t\t    cancellationDate: \(cancellationDate),
+                   \t\t    cancellationDateMs: \(cancellationDateMs),
+                   \t\t    cancellationDatePst: \(cancellationDatePst),
                    \t\t    originalPurchaseDate: \(originalPurchaseDate), 
                    \t\t    originalPurchaseDateMs: \(originalPurchaseDateMs), 
                    \t\t    originalPurchaseDatePst: \(originalPurchaseDatePst), 
@@ -280,6 +323,9 @@ import Foundation
                    \t\t    inAppOwnershipType: \(inAppOwnershipType), 
                    \t\t    isInIntroOfferPeriod: \(isInIntroOfferPeriod), 
                    \t\t    isTrialPeriod: \(isTrialPeriod), 
+                   \t\t    cancellationDate: \(cancellationDate),
+                   \t\t    cancellationDateMs: \(cancellationDateMs),
+                   \t\t    cancellationDatePst: \(cancellationDatePst),
                    \t\t    originalPurchaseDate: \(originalPurchaseDate), 
                    \t\t    originalPurchaseDateMs: \(originalPurchaseDateMs), 
                    \t\t    originalPurchaseDatePst: \(originalPurchaseDatePst), 
