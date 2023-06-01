@@ -10,6 +10,13 @@ import Network
 
 extension UIViewController{
 
+    func showSwiftUIView<V: View>(in vc: UIViewController, style: UIModalPresentationStyle, delegate: UIAdaptivePresentationControllerDelegate?, contentView: V) {
+        let hostingController = UIHostingController(rootView: contentView)
+        hostingController.modalPresentationStyle = style
+        hostingController.presentationController?.delegate = delegate
+        vc.present(hostingController, animated: true, completion: nil)
+    }
+    
     func showSwiftUIView<Content>(content: Content, style: UIModalPresentationStyle, delegate: UIAdaptivePresentationControllerDelegate?) where Content : View {
         let vc = UIHostingController(rootView: content)
         vc.modalPresentationStyle = style
