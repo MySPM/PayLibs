@@ -27,7 +27,6 @@ class PayStore: NSObject {
 
     public func payInfo() -> PayInfo? {
 
-        
         do {
             // 检索 PayInfo 对象
             if let data = UserDefaults.standard.object(forKey: PAY_INFO_KEY) as? Data {
@@ -42,22 +41,38 @@ class PayStore: NSObject {
         return nil
     }
 
-    public func hasPayed(_ productId: String, isSubscription: Bool) -> Bool {
+    public func hasPayed(_ productId: String, isSubscription: Bool, checkTime: Bool) -> Bool {
         guard let payInfo = payInfo() else {
             return false
         }
-        return Bundle.main.isDebug() || isPayInfoValid(payInfo, productId: productId, isSubscription: isSubscription)
+        return Bundle.main.isDebug() || isPayInfoValid(payInfo, productId: productId, isSubscription: isSubscription, checkTime: checkTime)
     }
 
-    private func isPayInfoValid(_ payInfo: PayInfo?, productId: String, isSubscription: Bool) -> Bool {
+    private func isPayInfoValid(_ payInfo: PayInfo?, productId: String, isSubscription: Bool, checkTime: Bool) -> Bool {
 
-        // 网络时间，不能区本地时间，否则用户可以修改本地时间，从而绕过支付
-        guard let netDataMs = internetTimeFetcher.getInternetDate()?.timeIntervalSince1970 else {
+        guard let payInfo else {
             return false
         }
 
-        let netInt64 = Int64(netDataMs)
-        return expireDateMs(productId: productId, payInfo: payInfo, isSubscription: isSubscription) >= netInt64
+        if checkTime {
+            // 网络时间，不能区本地时间，否则用户可以修改本地时间，从而绕过支付
+            guard let netDataMs = internetTimeFetcher.getInternetDate()?.timeIntervalSince1970 else {
+                return false
+            }
+
+            let netInt64 = Int64(netDataMs)
+            return expireDateMs(productId: productId, payInfo: payInfo, isSubscription: isSubscription) >= netInt64
+        } else {
+            let inAppBean = payInfo.inApps?.filter { (bean: InAppBean) -> Swift.Bool in bean.productId == productId }
+
+            if inAppBean == nil || inAppBean?.count == 0{
+                return false
+            }
+
+            let inApp = inAppBean![0]
+            return inApp.isPurchase() && !inApp.isCanceled()
+        }
+
     }
 
 

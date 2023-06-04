@@ -2,10 +2,10 @@ import StoreKit
 
 //typealias PayHandler = (PayInfo) -> Void
 
-@objcMembers public class PayManager: NSObject, SKProductsRequestDelegate {
+@objcMembers public class PayManager: NSObject {
     
     public static let shared = PayManager()
-    private let _transactionObserver = PaymentTransactionObserver.shared
+    private let paymentTransactionObserver = PaymentTransactionObserver.shared
     
     private var _productID: String?
     private var _password: String?
@@ -17,8 +17,8 @@ import StoreKit
 
     private var _delegateProxy: AppStoreRequestDelegate? = nil
 
-    public func hasPayed(_ productId: String, isSubscription: Bool) -> Bool {
-        return _payStore.hasPayed(productId, isSubscription: isSubscription)
+    public func hasPayed(_ productId: String, isSubscription: Bool, checkTime: Bool) -> Bool {
+        return _payStore.hasPayed(productId, isSubscription: isSubscription, checkTime: checkTime)
     }
     
     public func expireDateMs(_ productId: String, isSubscription: Bool) -> Int64 {
@@ -26,7 +26,8 @@ import StoreKit
     }
     
     public func pay(_ productId: String, password: String?, with handler: @escaping (PayInfo) -> Void) {
-        _transactionObserver.setProductInfo(productId, password, handler)
+
+        paymentTransactionObserver.setProductInfo(productId, password, handler)
 
         _handler = handler
         _productID = productId
@@ -42,7 +43,7 @@ import StoreKit
             request.delegate = self
             request.start()
         } else {
-            print("PayManager --> 应用没有开启内购权限")
+            print("[PayManager]: --> 应用没有开启内购权限")
             DispatchQueue.main.async {
                 self._handler(PayInfo.createError())
             }
@@ -50,6 +51,7 @@ import StoreKit
     }
 
     public func restore(_ productId: String, password: String?, with handler: @escaping (PayInfo) -> Void) {
+
         _handler = handler
         _productID = productId
         _password = password
@@ -59,23 +61,23 @@ import StoreKit
         _delegateProxy = AppStoreRequestDelegate(_productID!, _password, true, _handler)
         request.delegate = self
         request.start()
-        print("PayManager --> On refresh receipt started")
+        print("[PayManager]: --> On refresh receipt started")
     }
 
 
     public func verifyLocal(password: String) {
 
-        print("PayManager --> verifyLocal()")
+        print("[PayManager]: --> verifyLocal()")
 
         ReceiptDataVerifier.shared.verifyLocal(password: password) { (date, dictionary) in
             let isEmpty = dictionary.isEmpty
             if isEmpty {
-                print("PayManager --> verifyPay: 获取网络时间失败，没法验证是否购买了")
+                print("[PayManager]: --> verifyPay: 获取网络时间失败，没法验证是否购买了")
             }
             
             let info = isEmpty ? PayInfo.createError() : PayInfo.create(response: dictionary)
             self._payStore.savePayInfo(info)
-            print("PayManager --> verifyPay: savePayInfo. data is empty: \(isEmpty)")
+            print("[PayManager]: --> verifyPay: savePayInfo. data is empty: \(isEmpty)")
         }
     }
 
@@ -84,24 +86,29 @@ import StoreKit
     }
 
     public func addObserver() {
-        SKPaymentQueue.default().add(_transactionObserver)
+        SKPaymentQueue.default().add(paymentTransactionObserver)
     }
 
     public func removeObserver() {
-        SKPaymentQueue.default().remove(_transactionObserver)
+        SKPaymentQueue.default().remove(paymentTransactionObserver)
     }
+
+}
+
+extension PayManager: SKProductsRequestDelegate {
 
     // SKProductsRequestDelegate methods
     public func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         _delegateProxy?.productsRequest(request, didReceive: response)
     }
 
+    // SKProductsRequestDelegate methods
     public func request(_ request: SKRequest, didFailWithError error: Error) {
         _delegateProxy?.requestDidFail(request, didFailWithError: error)
     }
 
+    // SKProductsRequestDelegate methods
     public func requestDidFinish(_ request: SKRequest) {
         _delegateProxy?.requestDidFinish(request)
     }
-    // SKProductsRequestDelegate methods end
 }
