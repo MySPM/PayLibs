@@ -25,7 +25,7 @@ import StoreKit
         return _payStore.expireDateMs(productId: productId, isSubscription: isSubscription)
     }
     
-    public func pay(_ productId: String, password: String?, with handler: @escaping (PayInfo) -> Void) {
+    public func pay(_ productId: String, password: String?, needCheckTime: Bool, with handler: @escaping (PayInfo) -> Void) {
 
         paymentTransactionObserver.setProductInfo(productId, password, handler)
 
@@ -39,7 +39,7 @@ import StoreKit
             let products = NSSet(array: product)
             let request = SKProductsRequest(productIdentifiers: products as! Set<String>)
 
-            _delegateProxy = AppStoreRequestDelegate(productId, _password, false, _handler)
+            _delegateProxy = AppStoreRequestDelegate(productId: productId, password: _password, isRestore: false, needCheckTime: needCheckTime, _handler)
             request.delegate = self
             request.start()
         } else {
@@ -50,7 +50,7 @@ import StoreKit
         }
     }
 
-    public func restore(_ productId: String, password: String?, with handler: @escaping (PayInfo) -> Void) {
+    public func restore(_ productId: String, password: String?, needCheckTime: Bool, with handler: @escaping (PayInfo) -> Void) {
 
         _handler = handler
         _productID = productId
@@ -58,7 +58,7 @@ import StoreKit
         _isRestore = true
 
         let request = SKReceiptRefreshRequest()
-        _delegateProxy = AppStoreRequestDelegate(_productID!, _password, true, _handler)
+        _delegateProxy = AppStoreRequestDelegate(productId: _productID!, password: _password, isRestore: true, needCheckTime: needCheckTime,  _handler)
         request.delegate = self
         request.start()
         print("[PayManager]: --> On refresh receipt started")

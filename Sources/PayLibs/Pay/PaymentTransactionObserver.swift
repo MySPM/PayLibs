@@ -32,7 +32,9 @@ import StoreKit
                 switch code {
                 case 0:
                     print("[PayManager]: --> 购买成功!")
-                    _paymentHandler(PayInfo.create(response: response))
+                    let payInfo = PayInfo.create(response: response)
+                    PayStore.shared.savePayInfo(payInfo)
+                    _paymentHandler(payInfo)
                 case 21002:
                     print("[PayManager]: --> 从未购买过商品")
                     _paymentHandler(PayInfo.createError())

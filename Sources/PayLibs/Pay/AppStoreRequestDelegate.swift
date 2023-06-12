@@ -12,14 +12,15 @@ class AppStoreRequestDelegate {
     private var _productId: String
     private var _password: String?
     private var _isRestore: Bool
-    
+    private var _needCheckTime : Bool
     private let _payStore = PayStore.shared
 
-    init(_ productId: String, _ password: String?, _ isRestore: Bool, _ handler: @escaping (PayInfo) -> Void) {
+    init(productId: String, password: String?, isRestore: Bool, needCheckTime: Bool, _ handler: @escaping (PayInfo) -> Void) {
         _productId = productId
         _password = password
         _isRestore = isRestore
         _paymentHandler = handler
+        _needCheckTime = needCheckTime
     }
 
     func requestDidFail(_ request: SKRequest, didFailWithError error: Error) {
@@ -94,24 +95,20 @@ class AppStoreRequestDelegate {
             print("PayManager --> requestDidFinish: 获取交易信息成功, 开始验证交易信息")
             ReceiptDataVerifier.shared.verifyAfterInternetTime(receipt: data) { [self] date, response in
                 let timeHave = TimeChecker.shared.checkReceiptTimeHave(date, receipt: response)
-                var payInfoSuccess: PayInfo?
-                if timeHave > 0 {
-                    payInfoSuccess  = PayInfo.create(response: response)
-                    // 保存数据
-                    _payStore.savePayInfo(payInfoSuccess!)
-                }
+                let resultPayInfo = PayInfo.create(response: response)
+                // 保存数据
+                _payStore.savePayInfo(resultPayInfo)
+
                 DispatchQueue.main.async {
                     if response.count > 0 {
                         print("PayManager --> requestDidFinish: 获取交易信息成功")
-                        if timeHave > 0 {
-                            if (payInfoSuccess == nil) {
-                                self._paymentHandler(PayInfo.createError())
-                            } else {
-                                self._paymentHandler(payInfoSuccess!)
-                            }
+                        
+                        if self._needCheckTime {
+                            self._paymentHandler((timeHave > 0) ? resultPayInfo :PayInfo.createError())
                         } else {
-                            self._paymentHandler(PayInfo.createError())
+                            self._paymentHandler(resultPayInfo)
                         }
+
                     } else {
                         print("PayManager --> requestDidFinish: 获取网络时间失败，没法验证是否购买了")
                         self._paymentHandler(PayInfo.createError())
