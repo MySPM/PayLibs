@@ -41,14 +41,14 @@ class PayStore: NSObject {
         return nil
     }
 
-    public func hasPayed(_ productId: String, isSubscription: Bool, checkTime: Bool) -> Bool {
+    public func hasPayed(_ productId: String, isSubscription: Bool, checkTime: Bool, checkDayCount: Int) -> Bool {
         guard let payInfo = payInfo() else {
             return false
         }
-        return Bundle.main.isDebug() || isPayInfoValid(payInfo, productId: productId, isSubscription: isSubscription, checkTime: checkTime)
+        return Bundle.main.isDebug() || isPayInfoValid(payInfo, productId: productId, isSubscription: isSubscription, checkTime: checkTime, checkDayCount: checkDayCount)
     }
 
-    private func isPayInfoValid(_ payInfo: PayInfo?, productId: String, isSubscription: Bool, checkTime: Bool) -> Bool {
+    private func isPayInfoValid(_ payInfo: PayInfo?, productId: String, isSubscription: Bool, checkTime: Bool, checkDayCount: Int) -> Bool {
 
         guard let payInfo else {
             return false
@@ -61,7 +61,7 @@ class PayStore: NSObject {
             }
 
             let netInt64 = Int64(netDataMs)
-            return expireDateMs(productId: productId, payInfo: payInfo, isSubscription: isSubscription) >= netInt64
+            return expireDateMs(productId: productId, checkDayCount: checkDayCount, payInfo: payInfo, isSubscription: isSubscription) >= netInt64
         } else {
             let inAppBean = payInfo.inApps?.filter { (bean: InAppBean) -> Swift.Bool in bean.productId == productId }
 
@@ -76,12 +76,12 @@ class PayStore: NSObject {
     }
 
 
-    public func expireDateMs(productId: String, isSubscription: Bool) -> Int64{
-        let payInfo = payInfo()
-        return expireDateMs(productId: productId, payInfo:payInfo, isSubscription: isSubscription)
-    }
+//    public func expireDateMs(productId: String, isSubscription: Bool) -> Int64{
+//        let payInfo = payInfo()
+//        return expireDateMs(productId: productId, payInfo:payInfo, isSubscription: isSubscription)
+//    }
 
-    private func expireDateMs(productId: String, payInfo: PayInfo?, isSubscription: Bool) -> Int64{
+    private func expireDateMs(productId: String, checkDayCount:Int, payInfo: PayInfo?, isSubscription: Bool) -> Int64{
         guard let payInfo = payInfo else {
             return 0
         }
@@ -121,7 +121,7 @@ class PayStore: NSObject {
         } else {
             let firstPurchaseDataMs: Int64 = reduceInApps.last?.purchaseDateMs ?? 0
             // 有效期是一年, 买了几个就延长几年, 毫秒
-            let duration: Int64 = Int64(365 * 24 * 60 * 60 * 1000 * reduceInApps.count)
+            let duration: Int64 = Int64(checkDayCount * 24 * 60 * 60 * 1000 * reduceInApps.count)
             let expireDateMS: Int64 = firstPurchaseDataMs + duration
             return expireDateMS
         }
