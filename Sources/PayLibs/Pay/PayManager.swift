@@ -1,7 +1,5 @@
 import StoreKit
 
-//typealias PayHandler = (PayInfo) -> Void
-
 @objcMembers public class PayManager: NSObject {
     
     public static let shared = PayManager()
@@ -20,10 +18,6 @@ import StoreKit
     public func hasPayed(_ productId: String, isSubscription: Bool, checkTime: Bool, checkDayCount: Int) -> Bool {
         return _payStore.hasPayed(productId, isSubscription: isSubscription, checkTime: checkTime, checkDayCount: checkDayCount)
     }
-    
-//    public func expireDateMs(_ productId: String, isSubscription: Bool) -> Int64 {
-//        return _payStore.expireDateMs(productId: productId, isSubscription: isSubscription)
-//    }
     
     public func pay(_ productId: String, password: String?, needCheckTime: Bool, with handler: @escaping (PayInfo) -> Void) {
 
