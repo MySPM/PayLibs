@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import CommonLibs
 
 @objcMembers public class ReceiptDataVerifier: NSObject {
 
@@ -18,7 +19,7 @@ import Foundation
 
     func verifyAfterInternetTime(receipt: Data, handler: @escaping (Date, Dictionary<String, Any>) -> Void) {
         // 先检查网络时间
-        InternetTimeFetcher.shared.getInternetDate(success: { [self] date in
+        InternetTimeFetcher.shared.fetchInternetDateTime(success: { [self] date in
             // 向苹果服务器验证凭证
             post(url: AppStore, receiptData: receipt) { [self] dictionary in
                 if dictionary.isEmpty {
