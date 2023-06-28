@@ -123,9 +123,9 @@ extension PaymentTransactionObserver: SKPaymentTransactionObserver {
         print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-removedTransactions")
     }
 
-    public func paymentQueue(_ queue: SKPaymentQueue, updatedDownloads downloads: [SKDownload]) {
-        print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-updatedDownloads")
-    }
+//    public func paymentQueue(_ queue: SKPaymentQueue, updatedDownloads downloads: [SKDownload]) {
+//        print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-updatedDownloads")
+//    }
 
     public func paymentQueueDidChangeStorefront(_ queue: SKPaymentQueue) {
         print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-didChangeStorefront")
