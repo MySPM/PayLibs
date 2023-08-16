@@ -39,19 +39,26 @@ class AppStoreRequestDelegate {
         print("PayManager --> invalidProductIdentifiers:\(response.invalidProductIdentifiers)")
         print("PayManager --> 产品付费数量:\(products.count)")
 
-        var p: SKProduct?
-        for pro in products {
-            print("PayManager --> \(pro.description)")
-            print("PayManager --> \(pro.price)")
-            print("PayManager --> \(pro.productIdentifier)")
+        var payProduct: SKProduct?
+        for product in products {
+            print("PayManager --> \(product.description)")
+            print("PayManager --> \(product.price)")
+            print("PayManager --> \(product.productIdentifier)")
 
-            if pro.productIdentifier == _productId {
-                p = pro
+            let numberFormatter = NumberFormatter()
+            numberFormatter.formatterBehavior = .behavior10_4
+            numberFormatter.numberStyle = .currency
+            numberFormatter.locale = product.priceLocale
+            let formattedPrice = numberFormatter.string(from: product.price)
+            print("PayManager --> 内购本地化货币:\(formattedPrice!)")
+            
+            if product.productIdentifier == _productId {
+                payProduct = product
                 break
             }
         }
 
-        let payment = SKPayment(product: p!)
+        let payment = SKPayment(product: payProduct!)
 
         if _isRestore {
             print("PayManager --> 发送恢复购买请求")

@@ -86,6 +86,10 @@ import StoreKit
     public func removeObserver() {
         SKPaymentQueue.default().remove(paymentTransactionObserver)
     }
+    
+    public func requestAllProduct(productIds:[String]) {
+        LocalePriceHelper.shared.requestProducts(productIds: productIds)
+    }
 
 }
 
