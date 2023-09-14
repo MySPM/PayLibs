@@ -110,50 +110,6 @@ import Foundation
 
 @objcMembers public class InAppBean: NSObject, NSCoding, NSSecureCoding {
 
-    //{
-    ////    "expires_date": "2023-05-27 17:20:21 Etc/GMT",
-    ////    "expires_date_ms": 1685208021000,
-    ////    "expires_date_pst": "2023-05-27 10:20:21 America/Los_Angeles",
-//            "cancellation_date": "2019-12-05 19:14:48 Etc/GMT",
-//            "cancellation_date_ms": "1575573288000",
-//            "cancellation_date_pst": "2019-12-05 11:14:48 America/Los_Angeles",
-
-    //    "in_app_ownership_type": "PURCHASED",
-    ////    "is_in_intro_offer_period": false,
-    //    "is_trial_period": false,
-    //    "original_purchase_date": "2023-05-27 14:20:29 Etc/GMT",
-    //    "original_purchase_date_ms": 1685197229000,
-    //    "original_purchase_date_pst": "2023-05-27 07:20:29 America/Los_Angeles",
-    //    "original_transaction_id": 2000000339154501,
-    //    "product_id": "forum_post_1_year",
-    //    "purchase_date": "2023-05-27 16:20:21 Etc/GMT",
-    //    "purchase_date_ms": 1685204421000,
-    //    "purchase_date_pst": "2023-05-27 09:20:21 America/Los_Angeles",
-    //    "quantity": 1,
-    ////    "subscription_group_identifier": 21345454,
-    //    "transaction_id": 2000000339174296,
-    ////    "web_order_line_item_id": 2000000028366196
-    //}
-    
-
-    // {
-//"cancellation_date": "2019-12-05 19:14:48 Etc/GMT",
-//"cancellation_date_ms": "1575573288000",
-//"cancellation_date_pst": "2019-12-05 11:14:48 America/Los_Angeles",
-    //            "in_app_ownership_type" = PURCHASED;
-    //            "is_trial_period" = false;
-    //            "original_purchase_date" = "2023-05-27 10:03:25 Etc/GMT";
-    //            "original_purchase_date_ms" = 1685181805000;
-    //            "original_purchase_date_pst" = "2023-05-27 03:03:25 America/Los_Angeles";
-    //            "original_transaction_id" = 2000000339110824;
-    //            "product_id" = "com.andforce.fourms.001";
-    //            "purchase_date" = "2023-05-27 10:03:25 Etc/GMT";
-    //            "purchase_date_ms" = 1685181805000;
-    //            "purchase_date_pst" = "2023-05-27 03:03:25 America/Los_Angeles";
-    //            quantity = 1;
-    //            "transaction_id" = 2000000339110824;
-    //        }
-
     // 返回是否支持安全编码
     public static var supportsSecureCoding: Bool {
         return true
