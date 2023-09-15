@@ -53,7 +53,7 @@ import StoreKit
         
         for product in products {
             let numberFormatter = NumberFormatter()
-            numberFormatter.formatterBehavior = .behavior10_4 
+            numberFormatter.formatterBehavior = .behavior10_4
             numberFormatter.numberStyle = .currency
             numberFormatter.locale = product.priceLocale
             let formattedPrice = numberFormatter.string(from: product.price)
