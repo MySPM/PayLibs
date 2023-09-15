@@ -65,13 +65,10 @@ import StoreKit
 
         ReceiptDataVerifier.shared.verifyLocal(password: password) { (date, dictionary) in
             let isEmpty = dictionary.isEmpty
-            if isEmpty {
-                print("[PayManager]: --> verifyPay: 获取网络时间失败，没法验证是否购买了")
-            }
             
             let info = isEmpty ? PayInfo.createError() : PayInfo.create(response: dictionary)
             self._payStore.savePayInfo(info)
-            print("[PayManager]: --> verifyPay: savePayInfo. data is empty: \(isEmpty)")
+            print("[PayManager]: --> verifyPay: savePayInfo. 本地收据 is empty: \(isEmpty)")
         }
     }
 

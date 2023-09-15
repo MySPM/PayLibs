@@ -17,21 +17,23 @@ import StoreKit
     // SKProductsRequestDelegate methods
     public func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         products = response.products
+        print("[PayManager]: LocalePriceHelper, productsRequest, didReceive, \(response.products)")
     }
 
     // SKProductsRequestDelegate methods
     public func request(_ request: SKRequest, didFailWithError error: Error) {
-        print("didFailWithError")
+        print("[PayManager]: LocalePriceHelper, didFailWithError：\(error)")
     }
 
     // SKProductsRequestDelegate methods
     public func requestDidFinish(_ request: SKRequest) {
-        print("requestDidFinish")
+        print("[PayManager]: LocalePriceHelper, requestDidFinish")
     }
     
     public func requestProducts(productIds:[String]) {
 
         if SKPaymentQueue.canMakePayments() {
+            print("[PayManager]: LocalePriceHelper, --> start reuqest products")
             let products = NSSet(array: productIds)
             let request = SKProductsRequest(productIdentifiers: products as! Set<String>)
 
@@ -39,23 +41,24 @@ import StoreKit
             request.start()
             
         } else {
-            print("[PayManager]: --> 应用没有开启内购权限")
+            print("[PayManager]: LocalePriceHelper, --> 应用没有开启内购权限")
         }
     }
     
     public func localePrice(productId: String) -> String {
         guard let products = products else {
+            print("[PayManager]: LocalePriceHelper, localePrice is nil")
             return ""
         }
         
         for product in products {
             let numberFormatter = NumberFormatter()
-            numberFormatter.formatterBehavior = .behavior10_4
+            numberFormatter.formatterBehavior = .behavior10_4 
             numberFormatter.numberStyle = .currency
             numberFormatter.locale = product.priceLocale
             let formattedPrice = numberFormatter.string(from: product.price)
             
-            print("PayManager --> 内购本地化货币:\(formattedPrice!), \(product.productIdentifier), \(product.priceLocale)")
+            print("PayManager --> LocalePriceHelper, 内购本地化货币:\(formattedPrice!), \(product.productIdentifier), \(product.priceLocale)")
             
             if product.productIdentifier == productId {
                 guard let formattedPrice = formattedPrice else {
