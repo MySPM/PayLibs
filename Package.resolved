@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "git@github.com:andforce/CommonLibs.git",
       "state" : {
-        "revision" : "d1e943008a89f0dc5fcb3f224768b11e5404347b",
-        "version" : "0.0.5"
+        "branch" : "main",
+        "revision" : "91993ce9f5aef0a65230aa6fb14ad95d5a548947"
       }
     }
   ],
