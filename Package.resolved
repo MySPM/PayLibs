@@ -3,10 +3,10 @@
     {
       "identity" : "commonlibs",
       "kind" : "remoteSourceControl",
-      "location" : "git@github.com:andforce/CommonLibs.git",
+      "location" : "https://github.com/andforce/CommonLibs",
       "state" : {
         "branch" : "main",
-        "revision" : "91993ce9f5aef0a65230aa6fb14ad95d5a548947"
+        "revision" : "afcc5fafa0fb7b720d9a1081f3d98d3f1fa667df"
       }
     }
   ],
