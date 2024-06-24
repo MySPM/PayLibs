@@ -75,12 +75,6 @@ class PayStore: NSObject {
 
     }
 
-
-//    public func expireDateMs(productId: String, isSubscription: Bool) -> Int64{
-//        let payInfo = payInfo()
-//        return expireDateMs(productId: productId, payInfo:payInfo, isSubscription: isSubscription)
-//    }
-
     private func expireDateMs(productId: String, checkDayCount:Int, payInfo: PayInfo?, isSubscription: Bool) -> Int64{
         guard let payInfo = payInfo else {
             return 0
