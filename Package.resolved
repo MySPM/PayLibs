@@ -1,12 +1,21 @@
 {
   "pins" : [
     {
+      "identity" : "alamofire",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Alamofire/Alamofire.git",
+      "state" : {
+        "revision" : "f455c2975872ccd2d9c81594c658af65716e9b9a",
+        "version" : "5.9.1"
+      }
+    },
+    {
       "identity" : "commonlibs",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/andforce/CommonLibs",
       "state" : {
         "branch" : "main",
-        "revision" : "afcc5fafa0fb7b720d9a1081f3d98d3f1fa667df"
+        "revision" : "1b20095a65a91da72a58cd9e01f122980ff1a344"
       }
     }
   ],
