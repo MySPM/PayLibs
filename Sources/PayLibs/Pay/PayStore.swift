@@ -61,7 +61,9 @@ class PayStore: NSObject {
             }
 
             let netInt64 = Int64(netDataMs)
-            return expireDateMs(productId: productId, checkDayCount: checkDayCount, payInfo: payInfo, isSubscription: isSubscription) >= netInt64
+            let expireDateMs = expireDateMs(productId: productId, checkDayCount: checkDayCount, payInfo: payInfo, isSubscription: isSubscription)
+            print("\(PAY_INFO_KEY) --->> 网络时间戳:\(netInt64), 内购有效期截止时间戳:\(expireDateMs)")
+            return  expireDateMs >= netInt64
         } else {
             let inAppBean = payInfo.inApps?.filter { (bean: InAppBean) -> Swift.Bool in bean.productId == productId }
 
