@@ -108,9 +108,10 @@ class AppStoreRequestDelegate {
 
                 DispatchQueue.main.async {
                     if response.count > 0 {
-                        print("PayManager --> requestDidFinish: 获取交易信息成功")
+                        print("PayManager --> requestDidFinish: 获取交易信息成功, 是否需要检查剩余时间：\(self._needCheckTime)")
                         
                         if self._needCheckTime {
+                            print("PayManager --> requestDidFinish: 产品订阅剩余时间：\(timeHave) 秒")
                             self._paymentHandler((timeHave > 0) ? resultPayInfo :PayInfo.createError())
                         } else {
                             self._paymentHandler(resultPayInfo)
