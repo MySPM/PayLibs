@@ -60,7 +60,7 @@ class PayStore: NSObject {
                 return false
             }
 
-            let netInt64 = Int64(netDataMs)
+            let netInt64 = Int64(netDataMs * 1000)
             let expireDateMs = expireDateMs(productId: productId, checkDayCount: checkDayCount, payInfo: payInfo, isSubscription: isSubscription)
             print("\(PAY_INFO_KEY) --->> 网络时间戳:\(netInt64), 内购有效期截止时间戳:\(expireDateMs)")
             return  expireDateMs >= netInt64
