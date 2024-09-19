@@ -22,12 +22,14 @@ import CommonLibs
         InternetTimeFetcher.shared.fetchInternetDateTime(success: { [self] date in
             // 向苹果服务器验证凭证
             post(url: AppStore, receiptData: receipt) { [self] dictionary in
+                print("PayManager --> 向苹果【正式】服务器拉取凭证: \(dictionary)")
                 if dictionary.isEmpty {
                     handler(date, dictionary)
                 } else {
                     // 21007 说明是 Sandbox 下的收据却拿到正式环境进行了验证，因此需要重新在 Sandbox 下进行验证
                     if let status = dictionary["status"] as? Int, status == 21007 {
                         post(url: SANDBOX, receiptData: receipt) { sandboxDictionary in
+                            print("PayManager --> 向苹果【测试】服务器拉取凭证: \(sandboxDictionary)")
                             handler(date, sandboxDictionary)
                         }
                     } else {
