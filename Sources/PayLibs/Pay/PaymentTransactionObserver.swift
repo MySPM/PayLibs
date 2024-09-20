@@ -5,6 +5,7 @@
 
 import Foundation
 import StoreKit
+import MyLoggerOC
 
 @objcMembers class PaymentTransactionObserver: NSObject {
 
@@ -31,19 +32,19 @@ import StoreKit
 
                 switch code {
                 case 0:
-                    print("[PayManager]: --> 购买成功!")
+                    MyLogger.print("[PayManager]: --> 购买成功!")
                     let payInfo = PayInfo.create(response: response)
                     PayStore.shared.savePayInfo(payInfo)
                     _paymentHandler(payInfo)
                 case 21002:
-                    print("[PayManager]: --> 从未购买过商品")
+                    MyLogger.print("[PayManager]: --> 从未购买过商品")
                     _paymentHandler(PayInfo.createError())
                 default:
-                    print("[PayManager]: --> 购买失败，未通过验证！")
+                    MyLogger.print("[PayManager]: --> 购买失败，未通过验证！")
                     _paymentHandler(PayInfo.createError())
                 }
             } else {
-                print("[PayManager]: --> verifyPay: response is nil.")
+                MyLogger.print("[PayManager]: --> verifyPay: response is nil.")
                 _paymentHandler(PayInfo.createError())
             }
         }
@@ -71,35 +72,35 @@ extension PaymentTransactionObserver: SKPaymentTransactionObserver {
      上面的代理方法返回 true 则表示跳转到你的 App，IAP 继续完成交易，如果返回 false 则表示推迟或者取消购买，实际开发中因为可能还需要用户登录自己的账号、生成订单等，一般都是返回 false，之后自己手动把代理方法里面返回的 SKPayment 加入支付队列，然后在按照自己的支付、验证逻辑完成支付
      */
     func paymentQueue(_ queue: SKPaymentQueue, shouldAddStorePayment payment: SKPayment, for product: SKProduct) -> Bool {
-        print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-shouldAddStorePayment")
+        MyLogger.print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-shouldAddStorePayment")
         return true
     }
 
     public func paymentQueue(_ queue: SKPaymentQueue, didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]) {
-        print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-didRevokeEntitlementsForProductIdentifiers")
+        MyLogger.print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-didRevokeEntitlementsForProductIdentifiers")
     }
 
     func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
-        print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-updatedTransactions")
+        MyLogger.print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-updatedTransactions")
 
         for tran in transactions {
             switch tran.transactionState {
             case .purchasing:
-                print("[PayManager]: --> 商品添加进列表")
+                MyLogger.print("[PayManager]: --> 商品添加进列表")
             case .purchased:
                 SKPaymentQueue.default().finishTransaction(tran)
 
                 if (tran.original != nil) {
                     // 说明是自动续期
-                    print("[PayManager]: --> 自动续期，或者重复购买，开始验证")
+                    MyLogger.print("[PayManager]: --> 自动续期，或者重复购买，开始验证")
                 } else {
                     // 首次购买
-                    print("[PayManager]: --> 首次交易已经支付，开始验证")
+                    MyLogger.print("[PayManager]: --> 首次交易已经支付，开始验证")
                 }
                 // 异步方法验证
                 verifyLocal()
             case .restored:
-                print("[PayManager]: --> 恢复操作完成，开始验证")
+                MyLogger.print("[PayManager]: --> 恢复操作完成，开始验证")
                 SKPaymentQueue.default().finishTransaction(tran)
 
                 // 异步方法验证
@@ -108,9 +109,9 @@ extension PaymentTransactionObserver: SKPaymentTransactionObserver {
             case .failed:
                 SKPaymentQueue.default().finishTransaction(tran)
 
-                print("[PayManager]: --> 交易失败")
+                MyLogger.print("[PayManager]: --> 交易失败")
                 if let error = tran.error {
-                    print("[PayManager]: --> 交易失败 error: \(error.localizedDescription)")
+                    MyLogger.print("[PayManager]: --> 交易失败 error: \(error.localizedDescription)")
                 }
                 self._paymentHandler(PayInfo.createError())
             default:
@@ -120,23 +121,23 @@ extension PaymentTransactionObserver: SKPaymentTransactionObserver {
     }
 
     public func paymentQueue(_ queue: SKPaymentQueue, removedTransactions transactions: [SKPaymentTransaction]) {
-        print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-removedTransactions")
+        MyLogger.print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-removedTransactions")
     }
 
 //    public func paymentQueue(_ queue: SKPaymentQueue, updatedDownloads downloads: [SKDownload]) {
-//        print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-updatedDownloads")
+//        MyLogger.print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-updatedDownloads")
 //    }
 
     public func paymentQueueDidChangeStorefront(_ queue: SKPaymentQueue) {
-        print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-didChangeStorefront")
+        MyLogger.print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-didChangeStorefront")
     }
 
     func paymentQueue(_ queue: SKPaymentQueue, restoreCompletedTransactionsFailedWithError error: Error) {
-        print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-restoreCompletedTransactionsFailedWithError")
+        MyLogger.print("[PayManager]: [PaymentTransactionObserver]: --> paymentQueue-restoreCompletedTransactionsFailedWithError")
 
         for tran in queue.transactions {
             if let error = tran.error {
-                print("[PayManager]: --> 交易失败 error: \(error.localizedDescription)")
+                MyLogger.print("[PayManager]: --> 交易失败 error: \(error.localizedDescription)")
             }
         }
         _paymentHandler(PayInfo.createError())
@@ -144,11 +145,11 @@ extension PaymentTransactionObserver: SKPaymentTransactionObserver {
 
     func paymentQueueRestoreCompletedTransactionsFinished(_ queue: SKPaymentQueue) {
         var purchasedItemIDs = [String]()
-        print("[PayManager]: --> paymentQueueRestoreCompletedTransactionsFinished: \(queue.transactions.count)")
+        MyLogger.print("[PayManager]: --> paymentQueueRestoreCompletedTransactionsFinished: \(queue.transactions.count)")
         for transaction in queue.transactions {
             let productID = transaction.payment.productIdentifier
             purchasedItemIDs.append(productID)
-            print("[PayManager]: --> paymentQueueRestoreCompletedTransactionsFinished \(purchasedItemIDs)")
+            MyLogger.print("[PayManager]: --> paymentQueueRestoreCompletedTransactionsFinished \(purchasedItemIDs)")
         }
     }
 

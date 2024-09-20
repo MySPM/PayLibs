@@ -5,6 +5,7 @@
 
 import Foundation
 import CommonLibs
+import MyLoggerOC
 
 class PayStore: NSObject {
     public static let shared = PayStore()
@@ -21,7 +22,7 @@ class PayStore: NSObject {
             let data = try NSKeyedArchiver.archivedData(withRootObject: payInfo, requiringSecureCoding: true)
             UserDefaults.standard.set(data, forKey: PAY_INFO_KEY)
         } catch {
-            print("save PayInfo failed: \(error)")
+            MyLogger.print("save PayInfo failed: \(error)")
         }
     }
 
@@ -36,7 +37,7 @@ class PayStore: NSObject {
                 }
             }
         } catch {
-            print("get PayInfo failed: \(error)")
+            MyLogger.print("get PayInfo failed: \(error)")
         }
         return nil
     }
@@ -62,7 +63,7 @@ class PayStore: NSObject {
 
             let netInt64 = Int64(netDataMs * 1000)
             let expireDateMs = expireDateMs(productId: productId, checkDayCount: checkDayCount, payInfo: payInfo, isSubscription: isSubscription)
-            print("\(PAY_INFO_KEY) --->> 网络时间戳:\(netInt64), 内购有效期截止时间戳:\(expireDateMs)")
+            MyLogger.print("\(PAY_INFO_KEY) --->> 网络时间戳:\(netInt64), 内购有效期截止时间戳:\(expireDateMs)")
             return  expireDateMs >= netInt64
         } else {
             let inAppBean = payInfo.inApps?.filter { (bean: InAppBean) -> Swift.Bool in bean.productId == productId }

@@ -1,4 +1,5 @@
 import StoreKit
+import MyLoggerOC
 
 @objcMembers public class PayManager: NSObject {
     
@@ -37,7 +38,7 @@ import StoreKit
             request.delegate = self
             request.start()
         } else {
-            print("[PayManager]: --> 应用没有开启内购权限")
+            MyLogger.print("[PayManager]: --> 应用没有开启内购权限")
             DispatchQueue.main.async {
                 self._handler(PayInfo.createError())
             }
@@ -55,20 +56,20 @@ import StoreKit
         _delegateProxy = AppStoreRequestDelegate(productId: _productID!, password: _password, isRestore: true, needCheckTime: needCheckTime,  _handler)
         request.delegate = self
         request.start()
-        print("[PayManager]: --> On refresh receipt started")
+        MyLogger.print("[PayManager]: --> On refresh receipt started")
     }
 
 
     public func verifyLocal(password: String) {
 
-        print("[PayManager]: --> verifyLocal()")
+        MyLogger.print("[PayManager]: --> verifyLocal()")
 
         ReceiptDataVerifier.shared.verifyLocal(password: password) { (date, dictionary) in
             let isEmpty = dictionary.isEmpty
             
             let info = isEmpty ? PayInfo.createError() : PayInfo.create(response: dictionary)
             self._payStore.savePayInfo(info)
-            print("[PayManager]: --> verifyPay: savePayInfo. 本地收据 is empty: \(isEmpty)")
+            MyLogger.print("[PayManager]: --> verifyPay: savePayInfo. 本地收据 is empty: \(isEmpty)")
         }
     }
 

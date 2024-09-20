@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import MyLoggerOC
 
  @objcMembers class TimeChecker: NSObject {
 
@@ -50,7 +51,7 @@ import Foundation
 
         //UserDefaults.standard.set(newTimeInterval, forKey: _currentProductID + "exp_time")
         let interval = Int(newdate.timeIntervalSince(currentTime))
-        print("PayManager --> checkReceiptTimeHave: 购买过，还没有过期，剩余 \(interval) 秒")
+        MyLogger.print("PayManager --> checkReceiptTimeHave: 购买过，还没有过期，剩余 \(interval) 秒")
         return interval
     }
 }

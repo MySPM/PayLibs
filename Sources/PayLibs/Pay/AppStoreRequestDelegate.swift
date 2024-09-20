@@ -5,6 +5,7 @@
 
 import Foundation
 import StoreKit
+import MyLoggerOC
 
 class AppStoreRequestDelegate {
 
@@ -24,7 +25,7 @@ class AppStoreRequestDelegate {
     }
 
     func requestDidFail(_ request: SKRequest, didFailWithError error: Error) {
-        print("--->> Pay: error: \(error)")
+        MyLogger.print("--->> Pay: error: \(error)")
         DispatchQueue.main.async {
             self._paymentHandler(PayInfo.createError())
         }
@@ -36,21 +37,21 @@ class AppStoreRequestDelegate {
             return
         }
 
-        print("PayManager --> invalidProductIdentifiers:\(response.invalidProductIdentifiers)")
-        print("PayManager --> 产品付费数量:\(products.count)")
+        MyLogger.print("PayManager --> invalidProductIdentifiers:\(response.invalidProductIdentifiers)")
+        MyLogger.print("PayManager --> 产品付费数量:\(products.count)")
 
         var payProduct: SKProduct?
         for product in products {
-            print("PayManager --> \(product.description)")
-            print("PayManager --> \(product.price)")
-            print("PayManager --> \(product.productIdentifier)")
+            MyLogger.print("PayManager --> \(product.description)")
+            MyLogger.print("PayManager --> \(product.price)")
+            MyLogger.print("PayManager --> \(product.productIdentifier)")
 
             let numberFormatter = NumberFormatter()
             numberFormatter.formatterBehavior = .behavior10_4
             numberFormatter.numberStyle = .currency
             numberFormatter.locale = product.priceLocale
             let formattedPrice = numberFormatter.string(from: product.price)
-            print("PayManager --> 内购本地化货币:\(formattedPrice!)")
+            MyLogger.print("PayManager --> 内购本地化货币:\(formattedPrice!)")
             
             if product.productIdentifier == _productId {
                 payProduct = product
@@ -61,10 +62,10 @@ class AppStoreRequestDelegate {
         let payment = SKPayment(product: payProduct!)
 
         if _isRestore {
-            print("PayManager --> 发送恢复购买请求")
+            MyLogger.print("PayManager --> 发送恢复购买请求")
             SKPaymentQueue.default().restoreCompletedTransactions()
         } else {
-            print("PayManager --> 发送购买请求")
+            MyLogger.print("PayManager --> 发送购买请求")
             SKPaymentQueue.default().add(payment)
         }
     }
@@ -99,7 +100,7 @@ class AppStoreRequestDelegate {
                 return
             }
 
-            print("PayManager --> requestDidFinish: 获取交易信息成功, 开始验证交易信息")
+            MyLogger.print("PayManager --> requestDidFinish: 获取交易信息成功, 开始验证交易信息")
             ReceiptDataVerifier.shared.verifyAfterInternetTime(receipt: data) { [self] date, response in
                 let timeHave = TimeChecker.shared.checkReceiptTimeHave(date, receipt: response)
                 let resultPayInfo = PayInfo.create(response: response)
@@ -108,23 +109,23 @@ class AppStoreRequestDelegate {
 
                 DispatchQueue.main.async {
                     if response.count > 0 {
-                        print("PayManager --> requestDidFinish: 获取交易信息成功, 是否需要检查剩余时间：\(self._needCheckTime)")
+                        MyLogger.print("PayManager --> requestDidFinish: 获取交易信息成功, 是否需要检查剩余时间：\(self._needCheckTime)")
                         
                         if self._needCheckTime {
-                            print("PayManager --> requestDidFinish: 产品订阅剩余时间：\(timeHave) 秒")
+                            MyLogger.print("PayManager --> requestDidFinish: 产品订阅剩余时间：\(timeHave) 秒")
                             self._paymentHandler((timeHave > 0) ? resultPayInfo :PayInfo.createError())
                         } else {
                             self._paymentHandler(resultPayInfo)
                         }
 
                     } else {
-                        print("PayManager --> requestDidFinish: 获取网络时间失败，没法验证是否购买了")
+                        MyLogger.print("PayManager --> requestDidFinish: 获取网络时间失败，没法验证是否购买了")
                         self._paymentHandler(PayInfo.createError())
                     }
                 }
             }
         } else {
-            print("PayManager --> requestDidFinish: 不是SKReceiptRefreshRequest")
+            MyLogger.print("PayManager --> requestDidFinish: 不是SKReceiptRefreshRequest")
         }
     }
 }

@@ -5,6 +5,7 @@
 
 import Foundation
 import CommonLibs
+import MyLoggerOC
 
 @objcMembers public class ReceiptDataVerifier: NSObject {
 
@@ -22,14 +23,14 @@ import CommonLibs
         InternetTimeFetcher.shared.fetchInternetDateTime(success: { [self] date in
             // 向苹果服务器验证凭证
             post(url: AppStore, receiptData: receipt) { [self] dictionary in
-                print("PayManager --> 向苹果【正式】服务器拉取凭证")
+                MyLogger.print("PayManager --> 向苹果【正式】服务器拉取凭证")
                 if dictionary.isEmpty {
                     handler(date, dictionary)
                 } else {
                     // 21007 说明是 Sandbox 下的收据却拿到正式环境进行了验证，因此需要重新在 Sandbox 下进行验证
                     if let status = dictionary["status"] as? Int, status == 21007 {
                         post(url: SANDBOX, receiptData: receipt) { sandboxDictionary in
-                            print("PayManager --> 向苹果【测试】服务器拉取凭证")
+                            MyLogger.print("PayManager --> 向苹果【测试】服务器拉取凭证")
                             handler(date, sandboxDictionary)
                         }
                     } else {
@@ -68,16 +69,16 @@ import CommonLibs
 
         let dataTask = session.dataTask(with: request) { (data, response, error) in
             if let error = error {
-                print("PayManager --> verify->:\tverifyWithUrl() \(URL): 验证发生错误: \(error.localizedDescription)")
+                MyLogger.print("PayManager --> verify->:\tverifyWithUrl() \(URL): 验证发生错误: \(error.localizedDescription)")
                 handler(Dictionary())
                 return
             }
             guard let data = data, let dic = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] else {
-                print("PayManager --> verify->:\tverifyWithUrl() \(URL): 验证返回数据为空")
+                MyLogger.print("PayManager --> verify->:\tverifyWithUrl() \(URL): 验证返回数据为空")
                 handler(Dictionary())
                 return
             }
-            print("PayManager --> verify->:\tverifyWithUrl() \(URL): 验证返回数据 数量: \(dic.count), 太长不需要打印")
+            MyLogger.print("PayManager --> verify->:\tverifyWithUrl() \(URL): 验证返回数据 数量: \(dic.count), 太长不需要打印")
             handler(dic)
         }
 
@@ -90,7 +91,7 @@ import CommonLibs
         //从沙盒中获取交易凭证并且拼接成请求体数据
         let receiptUrl = Bundle.main.appStoreReceiptURL
         guard let receiptData = try? Data(contentsOf: receiptUrl!) else {
-            print("PayManager --> verify->:\tverifyWithUrl() : 没有任何收据，无需再次验证了")
+            MyLogger.print("PayManager --> verify->:\tverifyWithUrl() : 没有任何收据，无需再次验证了")
             return nil
         }
 
