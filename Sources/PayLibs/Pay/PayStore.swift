@@ -79,16 +79,22 @@ class PayStore: NSObject {
     }
 
     private func expireDateMs(productId: String, checkDayCount:Int, payInfo: PayInfo?, isSubscription: Bool) -> Int64{
+        
+        MyLogger.print("\(PAY_INFO_KEY) --->> 内购productId: \(productId) ,开始判断剩余有效时间戳")
+        
         guard let payInfo = payInfo else {
+            MyLogger.print("\(PAY_INFO_KEY) --->> payInfo 是空的，返回过期时间是0")
             return 0
         }
 
         guard let inApps = isSubscription ? payInfo.latestReceiptInfo : payInfo.inApps else {
+            MyLogger.print("\(PAY_INFO_KEY) --->> isSubscription 是空的，返回过期时间是0")
             return 0
         }
 
         // 网络时间，不能区本地时间，否则用户可以修改本地时间，从而绕过支付
         if internetTimeFetcher.getInternetDate() == nil {
+            MyLogger.print("\(PAY_INFO_KEY) --->> 网络时间获取出错，返回过期时间是0")
             return 0
         }
 
@@ -109,17 +115,20 @@ class PayStore: NSObject {
 
 
         if reduceInApps.isEmpty {
+            MyLogger.print("\(PAY_INFO_KEY) --->> 有效内购数量是0，返回过期时间是0")
             return 0
         }
 
         let bean = reduceInApps.first!
         if bean.isAutoSubscription() {
+            MyLogger.print("\(PAY_INFO_KEY) --->> 自动续订，返回过期时间: \(bean.expiresDateMs)")
             return bean.expiresDateMs
         } else {
             let firstPurchaseDataMs: Int64 = reduceInApps.last?.purchaseDateMs ?? 0
             // 有效期是一年, 买了几个就延长几年, 毫秒
             let duration: Int64 = Int64(checkDayCount * 24 * 60 * 60 * 1000 * reduceInApps.count)
             let expireDateMS: Int64 = firstPurchaseDataMs + duration
+            MyLogger.print("\(PAY_INFO_KEY) --->> 单次购买，返回时间是: \(expireDateMS)")
             return expireDateMS
         }
 
