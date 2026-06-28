@@ -152,30 +152,32 @@ import CommonLibs
                 
                 do {
                     let result = try await needPurchase?.purchase()
-                    await MainActor.run {
-                        switch result {
-                        case .success(let verificationReuslt):
-                            switch verificationReuslt {
-                            case .unverified(let signedType, let error):
-                                print("PayManager2 --->> 未验证购买：\(signedType), \(error)")
-                                handler(false)
-                            case .verified(let trans):
-                                print("PayManager2 --->> 购买成功:\(trans)")
-                                handler(true)
-                            }
-                        case .userCancelled:
-                            print("PayManager2 --->> 用户取消")
-                            handler(false)
-                        case .pending:
-                            print("PayManager2 --->> 购买挂起，正在处理")
-                            handler(false)
-                        case .none:
-                            print("PayManager2 --->> none")
-                            handler(false)
-                        case .some(_):
-                            print("PayManager2 --->> some")
-                            handler(false)
+                    switch result {
+                    case .success(let verificationReuslt):
+                        switch verificationReuslt {
+                        case .unverified(let signedType, let error):
+                            print("PayManager2 --->> 未验证购买：\(signedType), \(error)")
+                            await MainActor.run { handler(false) }
+                        case .verified(let trans):
+                            print("PayManager2 --->> 购买成功:\(trans)")
+                            // 完成交易并刷新本地权益缓存，确保购买后 hasPayed() 立即生效，
+                            // 避免“提示购买成功但功能仍提示需要内购”。
+                            await trans.finish()
+                            await fetchActiveTransactions()
+                            await MainActor.run { handler(true) }
                         }
+                    case .userCancelled:
+                        print("PayManager2 --->> 用户取消")
+                        await MainActor.run { handler(false) }
+                    case .pending:
+                        print("PayManager2 --->> 购买挂起，正在处理")
+                        await MainActor.run { handler(false) }
+                    case .none:
+                        print("PayManager2 --->> none")
+                        await MainActor.run { handler(false) }
+                    case .some(_):
+                        print("PayManager2 --->> some")
+                        await MainActor.run { handler(false) }
                     }
                     
                 } catch {
@@ -195,6 +197,8 @@ import CommonLibs
             // 等待 5 秒
             try? await Task.sleep(nanoseconds: 5 * 1_000_000_000)
 
+            // 恢复后刷新本地权益缓存，否则 hasPayed() 读到的是旧缓存
+            await fetchActiveTransactions()
             let result = hasPayed(productId)
 
             // 保证 handler 在主线程调用（尤其如果 UI 会使用它）
@@ -220,6 +224,8 @@ import CommonLibs
                 if checkResult.verified {
                     let validatedTransaction = checkResult.transaction
                     await validatedTransaction.finish()
+                    // 交易更新（含订阅续期/其他设备购买）后刷新本地权益缓存
+                    await self.fetchActiveTransactions()
                     //有未完成的订单，需要重新发送给服务端验证，是否下发权益
                     completion(validatedTransaction)
                 } else {
